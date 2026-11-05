@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Render XE EST8/PRO</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #ffffff; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<!-- Gera as fotos de produto: render.html?v=0..3 (ângulos), &bg=dark para fundo escuro -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="assets/xe-est-model.js"></script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var view = +(q.get('v') || 0), dark = q.get('bg') === 'dark';
+  var W = innerWidth, H = innerHeight;
+  var renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = dark ? 1.5 : 1.15;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(dark ? 0x0a0b0d : 0xffffff);
+  scene.environment = XEModel.studioEnvironment(renderer, !dark);
+
+  var cam = new THREE.PerspectiveCamera(28, W / H, 0.1, 50);
+  var key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(-3, 5, 4); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 8; key.shadow.camera.left = -4; key.shadow.camera.right = 4; key.shadow.camera.top = 4; key.shadow.camera.bottom = -4;
+  scene.add(key);
+  var rim = new THREE.DirectionalLight(0xffe7c4, 1.4); rim.position.set(4, 2, -3); scene.add(rim);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x888888, 0.5));
+
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: dark ? 0.5 : 0.16 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -1.05; floor.receiveShadow = true; scene.add(floor);
+
+  var logo = new Image();
+  logo.onload = build; logo.onerror = build; logo.src = 'assets/logo-branco.png';
+
+  function build() {
+    var R = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.5 });
+    var L = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.5, mirror: true });
+    L.root.scale.x = -1; // lado esquerdo espelhado
+    [R, L].forEach(function (m) { m.root.traverse(function (o) { if (o.isMesh) { o.castShadow = true; } }); scene.add(m.root); });
+
+    var views = [
+      // 0: par de frente, faceplates à mostra
+      function () { R.root.position.set(1.3, 0, 0); R.root.rotation.set(-0.3, -0.5, 0.12); L.root.position.set(-1.3, 0, 0); L.root.rotation.set(-0.3, 0.5, -0.12); cam.position.set(0, 1.6, 9.5); },
+      // 1: um lado, de costas para mostrar o corpo, a hélix e a cânula
+      function () { L.root.visible = false; R.root.position.set(0, 0.1, 0); R.root.rotation.set(0.25, -2.0, 0.15); cam.position.set(0, 0.5, 6.4); },
+      // 4: perfil, como no ouvido
+      function () { L.root.visible = false; R.root.position.set(0, 0.1, 0); R.root.rotation.set(0.1, -1.45, 0); cam.position.set(0, 0.4, 6.4); },
+      // 2: detalhe do faceplate
+      function () { L.root.visible = false; R.root.position.set(0, 0, 0); R.root.rotation.set(-0.05, 0.05, 0); cam.position.set(0, 0.2, 4.6); },
+      // 3: vista explodida
+      function () { L.root.visible = false; R.setExplode(1); R.root.position.set(0, 0.1, 0); R.root.rotation.set(0.25, -0.7, 0.05); cam.position.set(0, 0.4, 6.6); floor.visible = false; }
+    ];
+    views.splice(2, 0); (views[view] || views[0])();
+    cam.lookAt(0, view === 0 ? 0.2 : 0, 0);
+    R.update(0.016); L.update(0.016);
+    renderer.render(scene, cam);
+    document.title = 'pronto';
+  }
+})();
+</script>
+</body>
+</html>
