@@ -1,4 +1,4 @@
-/* XE EST8/PRO: comportamento das seções (anatomia 3D, campo eletrostático, varredura).
+/* Eletrostático: comportamento das seções (anatomia 3D, campo eletrostático, varredura).
    Cada seção se liga pelo atributo data-xe, então funciona igual no protótipo e nas seções do Shopify. */
 (function () {
   'use strict';
@@ -24,8 +24,11 @@
     // rotação do fone em cada passo, para o grupo em foco ficar de frente
     var ROT = [[0.2, -0.55, 0.05], [0.15, -0.95, 0.05], [0.35, -0.6, 0.0], [0.05, -0.35, 0.05], [0.45, -0.5, 0.0], [0.1, -1.4, 0.0]];
 
-    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, innerWidth < 768 ? 1.5 : 2));
+    var dpr = devicePixelRatio || 1;
+    // resolução limitada: acima de 1.5x o ganho visual é mínimo e o custo de GPU dobra
+    var prMax = Math.min(dpr, innerWidth < 768 ? 1.25 : 1.5), prMin = 0.75, pr = prMax;
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: dpr < 1.5, alpha: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(pr);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.45;
     var scene = new THREE.Scene();
@@ -40,18 +43,24 @@
     var model = null, pivot = new THREE.Group();
     scene.add(pivot);
     logo.onload = logo.onerror = function () {
-      model = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.42 });
+      model = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.42, lite: true });
       // centraliza o volume do fone no pivô
       var box = new THREE.Box3().setFromObject(model.root), c = box.getCenter(new THREE.Vector3());
       model.root.position.sub(c);
       pivot.add(model.root);
-      resize(); tick();
+      // compila os shaders antes do primeiro quadro para não travar no início do scroll
+      if (renderer.compile) renderer.compile(scene, cam);
+      resize(); wake();
     };
     logo.src = root.dataset.logo || 'assets/logo-branco.png';
 
     var state = { p: 0, step: -1, explode: 0, rot: ROT[0].slice(), mx: 0, my: 0 };
+    var sw = 0, sh = 0;
     function resize() {
       var w = stage.clientWidth, h = stage.clientHeight;
+      // no celular a barra de endereço muda a altura a todo scroll; só redimensiona quando muda de verdade
+      if (Math.abs(w - sw) < 1 && Math.abs(h - sh) < 80 && sw) return;
+      sw = w; sh = h;
       renderer.setSize(w, h, false);
       cam.aspect = w / h;
       var mobile = w < 768;
@@ -60,10 +69,11 @@
       cam.lookAt(0, 0, 0);
       cam.updateProjectionMatrix();
       // no desktop o fone fica à direita do texto; no celular, acima do texto
-      pivot.position.set(mobile ? 0 : 1.25, mobile ? 1.0 : -0.05, 0);
-      pivot.scale.setScalar(mobile ? 0.8 : 1);
+      pivot.position.set(mobile ? 0 : 1.25, mobile ? 1.15 : 0.3, 0);
+      pivot.scale.setScalar(mobile ? 0.78 : 0.92);
     }
-    addEventListener('resize', resize);
+    var rz = 0;
+    addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { resize(); wake(); }, 120); });
 
     function progress() {
       var r = root.getBoundingClientRect();
@@ -87,43 +97,67 @@
     stage.addEventListener('pointermove', function (e) {
       var r = stage.getBoundingClientRect();
       state.mx = (e.clientX - r.left) / r.width - 0.5; state.my = (e.clientY - r.top) / r.height - 0.5;
+      wake();
     });
 
     var visible = true, last = performance.now(), v3 = new THREE.Vector3();
+    var raf = 0, calm = 0, ready = false, frames = 0, slow = 0, lastRender = 0;
+    var labelState = {};
+    function wake() { calm = 0; if (!raf && visible && model) { last = performance.now(); raf = requestAnimationFrame(tick); } }
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (en) { visible = en[0].isIntersecting; if (visible) { last = performance.now(); tick(); } }).observe(root);
+      new IntersectionObserver(function (en) { visible = en[0].isIntersecting; if (visible) wake(); }).observe(root);
     }
-    var raf = 0;
-    function tick() {
-      cancelAnimationFrame(raf);
-      if (!visible || !model) return;
-      var now = performance.now(), dt = Math.min((now - last) / 1000, 0.05); last = now;
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) wake(); });
+    addEventListener('scroll', wake, { passive: true });
+
+    function tick(now) {
+      raf = 0;
+      if (!visible || !model || document.hidden) return;
+      var dt = Math.min((now - last) / 1000, 0.05); last = now;
       state.p = progress();
       var i = clamp(Math.floor(state.p * steps.length), 0, steps.length - 1);
       setStep(i);
       var k = reduce ? 1 : 1 - Math.pow(0.002, dt);
+      var e0 = state.explode;
       state.explode = lerp(state.explode, EXPLODE[i], k * 0.9);
-      model.setExplode(state.explode);
       var idle = (reduce || i !== 0) ? 0 : Math.sin(now / 2400) * 0.25;
-      for (var a = 0; a < 3; a++) state.rot[a] = lerp(state.rot[a], ROT[i][a], k * 0.7);
+      var moved = Math.abs(state.explode - e0);
+      for (var a = 0; a < 3; a++) { var r0 = state.rot[a]; state.rot[a] = lerp(state.rot[a], ROT[i][a], k * 0.7); moved += Math.abs(state.rot[a] - r0); }
+      // parado (sem scroll, sem transição, sem balanço) por meio segundo: para de renderizar até o próximo evento
+      calm = moved < 0.0004 && !idle ? calm + dt : 0;
+      // no passo inicial o balanço é lento: 30 quadros por segundo bastam
+      if (idle && moved < 0.0004 && now - lastRender < 32) { raf = requestAnimationFrame(tick); return; }
+      lastRender = now;
+      model.setExplode(state.explode);
       pivot.rotation.set(state.rot[0] + state.my * 0.15, state.rot[1] + idle + state.mx * 0.25, state.rot[2]);
       model.update(dt);
+      var t0 = performance.now();
       renderer.render(scene, cam);
-      // legendas presas às peças
-      var anchors = model.anchors(), w = stage.clientWidth, h = stage.clientHeight;
-      Object.keys(labels).forEach(function (key) {
+      if (!ready) { ready = true; root.classList.add('is-ready'); }
+      adapt(dt);
+      // legendas presas às peças (só escreve no DOM quando muda)
+      var anchors = model.anchors(), w = sw, h = sh, show = state.explode > 0.6;
+      for (var key in labels) {
         var l = labels[key], p = anchors[key];
-        if (!p) return;
+        if (!p) continue;
         v3.copy(p); model.root.localToWorld(v3); v3.project(cam);
-        l.style.left = ((v3.x + 1) / 2 * w) + 'px';
-        l.style.top = ((1 - v3.y) / 2 * h) + 'px';
-        var show = state.explode > 0.6;
-        l.classList.toggle('is-on', show);
-        l.style.opacity = show ? (FOCUS[i] === key ? 1 : 0.38) : 0;
-      });
-      raf = requestAnimationFrame(tick);
+        var x = Math.round((v3.x + 1) / 2 * w), y = Math.round((1 - v3.y) / 2 * h);
+        var op = show ? (FOCUS[i] === key ? 1 : 0.38) : 0;
+        var ls = labelState[key] || (labelState[key] = {});
+        if (ls.x !== x || ls.y !== y) { l.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) translate(-50%,-50%)'; ls.x = x; ls.y = y; }
+        if (ls.op !== op) { l.style.opacity = op; l.classList.toggle('is-on', show); ls.op = op; }
+      }
+      if (calm < 0.5) raf = requestAnimationFrame(tick);
     }
-    addEventListener('scroll', function () { if (!raf) tick(); }, { passive: true });
+    // qualidade adaptativa: se o aparelho não segura ~45 fps, baixa a resolução do canvas
+    function adapt(dt) {
+      frames++;
+      if (frames < 20) return;
+      slow = slow * 0.9 + (dt > 1 / 45 ? 1 : 0) * 0.1;
+      if (slow > 0.5 && pr > prMin) {
+        pr = Math.max(prMin, pr - 0.25); renderer.setPixelRatio(pr); renderer.setSize(sw, sh, false); slow = 0; frames = 0;
+      }
+    }
   }
 
   /* ---------------- campo: eletrostático x armadura ---------------- */
@@ -132,9 +166,10 @@
     var buttons = [].slice.call(root.querySelectorAll('.xe-campo__toggle button'));
     var caption = root.querySelector('.xe-campo__caption');
     var ctx = canvas.getContext('2d');
-    var mode = 'est', t = 0, visible = true;
+    var mode = 'est', t = 0, visible = true, cw = 0, ch = 0;
     function size() {
-      var r = canvas.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+      var r = canvas.getBoundingClientRect(); cw = r.width; ch = r.height;
+      var d = Math.min(devicePixelRatio || 1, 1.5);
       canvas.width = Math.round(r.width * d); canvas.height = Math.round(r.height * d);
       ctx.setTransform(d, 0, 0, d, 0, 0);
     }
@@ -146,7 +181,7 @@
         caption.textContent = b.dataset.caption;
       });
     });
-    if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible) loop(); }).observe(root);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible) loop(); }, { rootMargin: '100px' }).observe(root);
 
     var GOLD = '#d9b46a', INK = '#f3f1ec', MUTED = 'rgba(243,241,236,0.35)', BLUE = '#8fb6e8';
     function air(w, h, x0, phase, amp) {
@@ -178,14 +213,15 @@
       }
       // película: move inteira, quase como um pistão
       var amp = gap * 0.42 * drive;
-      ctx.strokeStyle = GOLD; ctx.lineWidth = 2.4; ctx.shadowColor = GOLD; ctx.shadowBlur = 10;
+      // brilho feito com um traço largo translúcido (shadowBlur custa caro a cada quadro)
       ctx.beginPath();
       for (var k = 0; k <= 40; k++) {
         var yy = top + (bot - top) * k / 40, edge = Math.sin(Math.PI * k / 40);
         var xx = cx + amp * Math.pow(edge, 0.25);
         if (k === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
       }
-      ctx.stroke(); ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(217,180,106,0.18)'; ctx.lineWidth = 9; ctx.stroke();
+      ctx.strokeStyle = GOLD; ctx.lineWidth = 2.4; ctx.stroke();
       air(w, h, cx + gap, t * 2.4, 7);
       label(w, h, 'estator', cx - gap - 26, bot + 18); label(w, h, 'película', cx, top - 24); label(w, h, 'estator', cx + gap + 26, bot + 18); label(w, h, 'ar', cx + gap + (w - cx - gap) / 2, bot + 18);
     }
@@ -217,7 +253,7 @@
     var raf = 0;
     function loop() {
       cancelAnimationFrame(raf);
-      var r = canvas.getBoundingClientRect(), w = r.width, h = r.height;
+      var w = cw, h = ch;
       ctx.clearRect(0, 0, w, h);
       if (mode === 'est') drawEst(w, h); else drawBa(w, h);
       t += reduce ? 0 : 0.016;
@@ -303,7 +339,7 @@
     [].slice.call(root.querySelectorAll('[data-xe-thumb]')).forEach(function (t) {
       t.addEventListener('click', function (e) {
         e.preventDefault();
-        main.src = t.getAttribute('href'); main.alt = t.querySelector('img').alt;
+        main.removeAttribute('srcset'); main.src = t.getAttribute('href'); main.alt = t.querySelector('img').alt;
         root.querySelectorAll('[data-xe-thumb]').forEach(function (o) { o.classList.toggle('is-active', o === t); });
       });
     });

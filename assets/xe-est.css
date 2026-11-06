@@ -1,4 +1,4 @@
-/* XE EST8/PRO: seções próprias da página do eletrostático.
+/* Eletrostático: seções próprias da página do eletrostático.
    Tudo fica sob .xe-est para não vazar no tema Impulse; tipografia herda as variáveis do tema
    (--typeHeaderPrimary Montserrat, --typeBasePrimary Lato). */
 .xe-est {
@@ -41,11 +41,15 @@
 .xe-buy__wa svg { width: 18px; height: 18px; }
 
 /* ---------- anatomia: fone 3D explodindo no scroll ---------- */
-.xe-ana { position: relative; height: 520vh; }
+.xe-ana { position: relative; height: 480vh; }
 .xe-ana__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background:
   radial-gradient(60% 55% at 62% 48%, rgba(217, 180, 106, 0.1), transparent 70%),
   radial-gradient(40% 40% at 20% 80%, rgba(143, 182, 232, 0.06), transparent 70%), var(--xe-bg); }
 .xe-ana__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.xe-ana__canvas { opacity: 0; transition: opacity .8s ease; }
+.xe-ana.is-ready .xe-ana__canvas, .xe-ana.no-webgl .xe-ana__canvas { opacity: 1; }
+.xe-ana__skip { align-self: flex-start; margin-top: 4px; font-family: var(--xe-head); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--xe-ink); text-decoration: none; border: 1px solid var(--xe-est); padding: 12px 18px; transition: background .25s, color .25s; }
+.xe-ana__skip:hover, .xe-ana__skip:focus-visible { background: var(--xe-est); color: #07080a; }
 .xe-ana__copy { position: absolute; z-index: 2; left: max(24px, 5vw); top: 50%; transform: translateY(-50%); width: min(420px, 40vw); }
 .xe-ana__step { position: absolute; inset: auto 0 auto 0; top: 0; transform: translateY(-50%); opacity: 0; visibility: hidden; pointer-events: none; display: flex; flex-direction: column; gap: 14px; }
 .xe-ana__step.is-on { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .5s ease; }
@@ -54,7 +58,7 @@
 .xe-ana__count { font-family: var(--xe-head); font-size: clamp(64px, 9vw, 120px); line-height: 0.9; font-variant-numeric: tabular-nums; }
 .xe-ana__count small { font-size: 0.22em; letter-spacing: 0.2em; margin-left: 8px; vertical-align: middle; color: var(--xe-muted); }
 .xe-ana__labels { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-.xe-ana__label { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 8px; font-family: var(--xe-head); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity .4s ease; }
+.xe-ana__label { position: absolute; left: 0; top: 0; will-change: transform; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 8px; font-family: var(--xe-head); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity .4s ease; }
 .xe-ana__label::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06), 0 0 14px currentColor; }
 .xe-ana__label span { color: var(--xe-ink); background: rgba(7, 8, 10, 0.72); padding: 5px 8px; border: 1px solid var(--xe-line); }
 .xe-ana__label.is-on { opacity: 1; }
@@ -73,7 +77,7 @@
 .xe-ana__fallback img { max-height: 80vh; width: auto; }
 .xe-ana.no-webgl .xe-ana__fallback { display: grid; }
 @media (max-width: 768px) {
-  .xe-ana { height: 560vh; }
+  .xe-ana { height: 520vh; }
   .xe-ana__copy { left: 17px; right: 17px; width: auto; top: auto; bottom: 28px; transform: none; min-height: 190px; }
   .xe-ana__step { top: auto; bottom: 0; transform: none; background: linear-gradient(transparent, rgba(7, 8, 10, 0.92) 30%); padding-top: 30px; }
   .xe-ana__step.is-on { transform: none; }

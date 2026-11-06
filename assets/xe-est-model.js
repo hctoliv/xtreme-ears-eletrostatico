@@ -1,4 +1,4 @@
-/* Xtreme Ears XE EST8/PRO: modelo 3D procedural do fone (casco moldado, faceplate e os 8 drivers).
+/* Xtreme Ears Eletrostático: modelo 3D procedural do fone (casco moldado, faceplate e os 8 drivers).
    Usa o THREE global (three@0.160.0/build/three.min.js). Compartilhado pela página e pelo render das fotos. */
 (function (global) {
   'use strict';
@@ -410,7 +410,7 @@
           var spread = [[-0.12, 0.2, 0.18], [0.12, 0.2, -0.02], [-0.12, -0.15, 0.2], [0.14, -0.18, 0]][i];
           d.position.set(d.userData.base.x + spread[0] * k * 1.6, d.userData.base.y + spread[1] * k * 1.6, d.userData.base.z + spread[2] * k * 1.6);
         });
-        shellMat.opacity = lerp(opts.shellOpacity || 0.55, 0.12, k);
+        shellMat.opacity = lerp(opts.lite ? 0.24 : (opts.shellOpacity || 0.55), opts.lite ? 0.07 : 0.12, k);
         groups.tubes.visible = k < 0.35; groups.wires.visible = k < 0.35;
         groups.tubes.children.forEach(function (t) { t.material.opacity = 0.75 * (1 - k / 0.35); });
       },
@@ -435,7 +435,7 @@
         });
         // película: ondulação senoidal discreta, mais forte com energia
         var amp = 0.004 + (state.energy.est || 0) * 0.012 + (state.focus === 'est' ? 0.006 : 0);
-        parts.est.forEach(function (d, i) {
+        if (!(opts.lite && state.explode < 0.05 && !state.energy.est)) parts.est.forEach(function (d, i) {
           var f = d.userData.film, pa = f.geometry.attributes.position;
           for (var v = 0; v < pa.count; v++) {
             var x = pa.getX(v), y = pa.getY(v);
@@ -451,6 +451,30 @@
         var c = function (g) { var b = new THREE.Box3().setFromObject(g); return b.getCenter(new THREE.Vector3()); };
         return { est: c(groups.est), mid: c(groups.mid), bass: c(groups.bass), pcb: c(groups.pcb) };
       }
+    };
+    // modo leve (página ao vivo): sem transmission, que obriga o three a renderizar a cena duas vezes por quadro
+    if (opts.lite) {
+      root.traverse(function (o) {
+        if (!o.isMesh || !o.material || !o.material.transmission) return;
+        var m = o.material;
+        m.transmission = 0; m.transparent = true;
+        if (m === shellMat) { m.color.setHex(0xb4c2cc); m.opacity = 0.24; m.roughness = 0.04; m.envMapIntensity = 1.6; } else { m.opacity = Math.min(m.opacity, 0.5); }
+        m.needsUpdate = true;
+      });
+    }
+    // centro de cada grupo medido uma vez, relativo à posição do grupo (as legendas usam isso a cada quadro)
+    var anchorOff = {};
+    ['est', 'mid', 'bass', 'pcb'].forEach(function (k) {
+      groups[k].updateMatrixWorld(true);
+      var c = new THREE.Box3().setFromObject(groups[k]).getCenter(new THREE.Vector3());
+      root.updateMatrixWorld(true);
+      root.worldToLocal(c);
+      anchorOff[k] = c.sub(groups[k].position);
+    });
+    var anchorOut = { est: new THREE.Vector3(), mid: new THREE.Vector3(), bass: new THREE.Vector3(), pcb: new THREE.Vector3() };
+    api.anchors = function () {
+      for (var k in anchorOut) anchorOut[k].copy(groups[k].position).add(anchorOff[k]);
+      return anchorOut;
     };
     api.setExplode(0);
     return api;

@@ -4,9 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Fone In Ear XE EST8/PRO – Loja Fone Moldados Xtreme Ears</title>
-<meta name="description" content="XE EST8/PRO: fone in ear moldado com 8 drivers, 4 eletrostáticos para altas e super altas, crossover de 3 vias, 19 Ω, 115 dB e resposta de 10 Hz a 24 kHz.">
+<title>Fone In Ear Eletrostático – Loja Fone Moldados Xtreme Ears</title>
+<meta name="description" content="Fone In Ear Eletrostático Xtreme Ears: moldado com 8 drivers, 4 eletrostáticos para altas e super altas, crossover de 3 vias, 19 Ω, 115 dB e resposta de 10 Hz a 24 kHz.">
 <link rel="preconnect" href="https://xtremeears.com.br">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin>
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://xtremeears.com.br/cdn/fonts/montserrat/montserrat_n4.81949fa0ac9fd2021e16436151e8eaa539321637.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://xtremeears.com.br/cdn/fonts/lato/lato_n4.c3b93d431f0091c8be23185e15c9d1fee1e971c5.woff2">
 <!-- CSS do tema publicado (Impulse 8.1) para o protótipo ficar idêntico à loja -->
 <link rel="stylesheet" href="https://xtremeears.com.br/cdn/shop/t/63/assets/theme.css?v=93626464380700918791769780400">
 <style>
@@ -39,7 +43,7 @@ body { margin: 0; background: #fff; }
 </head>
 <body class="template-product">
 
-<p class="proto-note"><b>Protótipo</b> da página do eletrostático no tema Impulse da Xtreme Ears. Nome do modelo e preço são provisórios.</p>
+<p class="proto-note"><b>Protótipo</b> da página do eletrostático no tema Impulse da Xtreme Ears. Preço provisório.</p>
 
 <!-- announcement bar (Impulse) -->
 <div class="announcement-bar">
@@ -98,8 +102,65 @@ body { margin: 0; background: #fff; }
 
 <main class="main-content" id="MainContent">
 
-<!-- ============ 1. SEÇÃO DE PRODUTO (main-product do Impulse) ============ -->
-<div class="product-section">
+<!-- ============ 1. APRESENTAÇÃO / ANATOMIA (seção xe-est-anatomia, primeira do template) ============ -->
+<section class="xe-est xe-est--dark xe-ana" data-xe="anatomia" data-logo="assets/logo-branco.png" aria-label="Anatomia do Fone In Ear Eletrostático">
+  <div class="xe-ana__stage">
+    <canvas class="xe-ana__canvas" aria-hidden="true"></canvas>
+    <div class="xe-ana__fallback"><img src="fotos/xe-est8-pro-3-1000.webp" width="1000" height="750" loading="lazy" decoding="async" alt="Vista explodida do Eletrostático"></div>
+    <div class="xe-ana__labels" aria-hidden="true">
+      <div class="xe-ana__label" data-k="est"><span>4 eletrostáticos</span></div>
+      <div class="xe-ana__label" data-k="mid"><span>2 médios</span></div>
+      <div class="xe-ana__label" data-k="bass"><span>2 graves</span></div>
+      <div class="xe-ana__label" data-k="pcb"><span>Crossover 3 vias</span></div>
+    </div>
+    <div class="xe-ana__copy">
+      <div class="xe-ana__step is-on">
+        <span class="xe-est__eyebrow">Novo · Linha eletrostática</span>
+        <h2>Eletrostático</h2>
+        <p>Oito drivers, quatro deles movidos a campo elétrico. Role para abrir o fone e ver o que tem dentro do corpo moldado.</p>
+        <a class="xe-ana__skip" href="#produto">Ver preço e personalizar</a>
+      </div>
+      <div class="xe-ana__step">
+        <span class="xe-ana__count" style="color:var(--xe-est)">4<small>eletrostáticos</small></span>
+        <h2>Altas e super altas</h2>
+        <p>Película ultrafina entre dois estatores perfurados. Pratos, respiração e ambiência com velocidade e ar de sobra.</p>
+      </div>
+      <div class="xe-ana__step">
+        <span class="xe-ana__count" style="color:var(--xe-mid)">2<small>drivers</small></span>
+        <h2>Médios</h2>
+        <p>Voz, guitarra e teclado no centro do retorno, com corpo e articulação.</p>
+      </div>
+      <div class="xe-ana__step">
+        <span class="xe-ana__count" style="color:var(--xe-bass)">2<small>drivers</small></span>
+        <h2>Graves</h2>
+        <p>Bumbo e baixo com peso e definição, sem invadir os médios.</p>
+      </div>
+      <div class="xe-ana__step">
+        <span class="xe-ana__count" style="color:var(--xe-pcb)">3<small>vias</small></span>
+        <h2>Crossover</h2>
+        <p>Divide o sinal entre graves, médios e eletrostáticos, e cada grupo trabalha só na faixa em que é melhor.</p>
+      </div>
+      <div class="xe-ana__step">
+        <span class="xe-est__eyebrow">Moldado no seu ouvido</span>
+        <h2>Tudo isso dentro de um corpo feito sob medida.</h2>
+        <p>Isolamento do molde, encaixe que não sai do lugar no palco e três tubos de som até a ponta da cânula.</p>
+        <a class="xe-ana__skip" href="#produto">Personalizar o meu</a>
+      </div>
+    </div>
+    <nav class="xe-ana__rail" aria-label="Partes do fone">
+      <button type="button" class="is-on"><span>Fone</span><i></i></button>
+      <button type="button"><span>Eletrostáticos</span><i></i></button>
+      <button type="button"><span>Médios</span><i></i></button>
+      <button type="button"><span>Graves</span><i></i></button>
+      <button type="button"><span>Crossover</span><i></i></button>
+      <button type="button"><span>Moldado</span><i></i></button>
+    </nav>
+    <span class="xe-ana__hint">Role para abrir</span>
+  </div>
+</section>
+
+<!-- ============ 2. SEÇÃO DE PRODUTO (main-product do Impulse) ============ -->
+<div class="product-section" id="produto">
   <div class="page-content page-content--product">
     <div class="page-width">
       <div class="grid grid--product-images-right">
@@ -108,7 +169,7 @@ body { margin: 0; background: #fff; }
           <div class="product-single__meta">
             <div class="product-block product-block--header">
               <div class="product-single__vendor"><a href="https://xtremeears.com.br/collections/vendors?q=Xtreme%20Ears">Xtreme Ears</a></div>
-              <h1 class="h2 product-single__title">Fone In Ear XE EST8/PRO</h1>
+              <h1 class="h2 product-single__title">Fone In Ear Eletrostático</h1>
             </div>
 
             <!-- bloco "Liquid personalizado" → snippet xe-est-buybox -->
@@ -143,7 +204,7 @@ body { margin: 0; background: #fff; }
               <!-- no Shopify este botão é o do Custom Product Builder (PERSONALIZAR) -->
               <a href="#personalizar" class="btn btn--full add-to-cart"><span>Personalizar</span></a>
               <div class="xe-est">
-                <a class="xe-buy__wa" href="https://wa.me/5511950295494?text=Oi!%20Quero%20saber%20mais%20sobre%20o%20XE%20EST8%2FPRO%20eletrost%C3%A1tico" target="_blank" rel="noopener">
+                <a class="xe-buy__wa" href="https://wa.me/5511950295494?text=Oi!%20Quero%20saber%20mais%20sobre%20o%20fone%20Eletrost%C3%A1tico" target="_blank" rel="noopener">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2s.2-1.1.1-1.2-.2-.2-.5-.3Z"/></svg>
                   Tirar dúvidas no WhatsApp
                 </a>
@@ -159,7 +220,7 @@ body { margin: 0; background: #fff; }
               <details open>
                 <summary>Descrição</summary>
                 <div class="rte">
-                  <p><strong>O XE EST8/PRO leva o som eletrostático para a linha de moldados da Xtreme Ears.</strong> São oito drivers em um crossover de três vias: quatro eletrostáticos cuidam das altas e super altas, dois drivers ficam com os médios e dois com os graves.</p>
+                  <p><strong>O Eletrostático leva esse som para a linha de moldados da Xtreme Ears.</strong> São oito drivers em um crossover de três vias: quatro eletrostáticos cuidam das altas e super altas, dois drivers ficam com os médios e dois com os graves.</p>
                   <p>O eletrostático move uma película ultrafina com campo elétrico, sem bobina no caminho. O resultado são agudos rápidos, abertos e cheios de ar, que somam detalhe sem cansar o ouvido em shows longos.</p>
                 </div>
               </details>
@@ -177,12 +238,12 @@ body { margin: 0; background: #fff; }
 
         <div class="grid__item medium-up--one-half">
           <div class="product__photos" data-xe="galeria">
-            <div class="proto-main"><img data-xe-main src="fotos/xe-est8-pro-0.png" alt="Par de fones XE EST8/PRO com faceplate preto e flocos dourados, corpo em acrílico transparente" width="1600" height="1200"></div>
+            <div class="proto-main"><img data-xe-main src="fotos/xe-est8-pro-0-1000.webp" srcset="fotos/xe-est8-pro-0-1000.webp 1000w, fotos/xe-est8-pro-0.webp 1600w" sizes="(min-width: 769px) 50vw, 100vw" loading="lazy" decoding="async" alt="Par de fones Eletrostático com faceplate preto e flocos dourados, corpo em acrílico transparente" width="1600" height="1200"></div>
             <div class="proto-thumbs">
-              <a href="fotos/xe-est8-pro-0.png" data-xe-thumb class="is-active"><img src="fotos/xe-est8-pro-0.png" alt="Par de fones XE EST8/PRO de frente" loading="lazy"></a>
-              <a href="fotos/xe-est8-pro-2.png" data-xe-thumb><img src="fotos/xe-est8-pro-2.png" alt="XE EST8/PRO de perfil com os drivers aparentes" loading="lazy"></a>
-              <a href="fotos/xe-est8-pro-1.png" data-xe-thumb><img src="fotos/xe-est8-pro-1.png" alt="XE EST8/PRO mostrando o corpo moldado e a cânula" loading="lazy"></a>
-              <a href="fotos/xe-est8-pro-3.png" data-xe-thumb><img src="fotos/xe-est8-pro-3.png" alt="Vista explodida do XE EST8/PRO com os oito drivers" loading="lazy"></a>
+              <a href="fotos/xe-est8-pro-0.webp" data-xe-thumb class="is-active"><img src="fotos/xe-est8-pro-0-thumb.webp" width="200" height="150" decoding="async" alt="Par de fones Eletrostático de frente" loading="lazy"></a>
+              <a href="fotos/xe-est8-pro-2.webp" data-xe-thumb><img src="fotos/xe-est8-pro-2-thumb.webp" width="200" height="150" decoding="async" alt="Eletrostático de perfil com os drivers aparentes" loading="lazy"></a>
+              <a href="fotos/xe-est8-pro-1.webp" data-xe-thumb><img src="fotos/xe-est8-pro-1-thumb.webp" width="200" height="150" decoding="async" alt="Eletrostático mostrando o corpo moldado e a cânula" loading="lazy"></a>
+              <a href="fotos/xe-est8-pro-3.webp" data-xe-thumb><img src="fotos/xe-est8-pro-3-thumb.webp" width="200" height="150" decoding="async" alt="Vista explodida do Eletrostático com os oito drivers" loading="lazy"></a>
             </div>
           </div>
         </div>
@@ -191,61 +252,6 @@ body { margin: 0; background: #fff; }
     </div>
   </div>
 </div>
-
-<!-- ============ 2. ANATOMIA (seção xe-est-anatomia) ============ -->
-<section class="xe-est xe-est--dark xe-ana" data-xe="anatomia" data-logo="assets/logo-branco.png" aria-label="Anatomia do XE EST8/PRO">
-  <div class="xe-ana__stage">
-    <canvas class="xe-ana__canvas" aria-hidden="true"></canvas>
-    <div class="xe-ana__fallback"><img src="fotos/xe-est8-pro-3.png" alt="Vista explodida do XE EST8/PRO"></div>
-    <div class="xe-ana__labels" aria-hidden="true">
-      <div class="xe-ana__label" data-k="est"><span>4 eletrostáticos</span></div>
-      <div class="xe-ana__label" data-k="mid"><span>2 médios</span></div>
-      <div class="xe-ana__label" data-k="bass"><span>2 graves</span></div>
-      <div class="xe-ana__label" data-k="pcb"><span>Crossover 3 vias</span></div>
-    </div>
-    <div class="xe-ana__copy">
-      <div class="xe-ana__step is-on">
-        <span class="xe-est__eyebrow">XE EST8/PRO</span>
-        <h2>Oito drivers. Quatro deles movidos a campo elétrico.</h2>
-        <p>Role para abrir o fone e ver o que tem dentro do corpo moldado.</p>
-      </div>
-      <div class="xe-ana__step">
-        <span class="xe-ana__count" style="color:var(--xe-est)">4<small>eletrostáticos</small></span>
-        <h2>Altas e super altas</h2>
-        <p>Película ultrafina entre dois estatores perfurados. Pratos, respiração e ambiência com velocidade e ar de sobra.</p>
-      </div>
-      <div class="xe-ana__step">
-        <span class="xe-ana__count" style="color:var(--xe-mid)">2<small>drivers</small></span>
-        <h2>Médios</h2>
-        <p>Voz, guitarra e teclado no centro do retorno, com corpo e articulação.</p>
-      </div>
-      <div class="xe-ana__step">
-        <span class="xe-ana__count" style="color:var(--xe-bass)">2<small>drivers</small></span>
-        <h2>Graves</h2>
-        <p>Bumbo e baixo com peso e definição, sem invadir os médios.</p>
-      </div>
-      <div class="xe-ana__step">
-        <span class="xe-ana__count" style="color:var(--xe-pcb)">3<small>vias</small></span>
-        <h2>Crossover</h2>
-        <p>Divide o sinal entre graves, médios e eletrostáticos, e cada grupo trabalha só na faixa em que é melhor.</p>
-      </div>
-      <div class="xe-ana__step">
-        <span class="xe-est__eyebrow">Moldado no seu ouvido</span>
-        <h2>Tudo isso dentro de um corpo feito sob medida.</h2>
-        <p>Isolamento do molde, encaixe que não sai do lugar no palco e três tubos de som até a ponta da cânula.</p>
-      </div>
-    </div>
-    <nav class="xe-ana__rail" aria-label="Partes do fone">
-      <button type="button" class="is-on"><span>Fone</span><i></i></button>
-      <button type="button"><span>Eletrostáticos</span><i></i></button>
-      <button type="button"><span>Médios</span><i></i></button>
-      <button type="button"><span>Graves</span><i></i></button>
-      <button type="button"><span>Crossover</span><i></i></button>
-      <button type="button"><span>Moldado</span><i></i></button>
-    </nav>
-    <span class="xe-ana__hint">Role para abrir</span>
-  </div>
-</section>
 
 <!-- ============ 3. COMO FUNCIONA O ELETROSTÁTICO (seção xe-est-campo) ============ -->
 <section class="xe-est xe-est--dark xe-campo" data-xe="campo">
@@ -301,7 +307,7 @@ body { margin: 0; background: #fff; }
   <div class="xe-est__wrap xe-ficha__grid">
     <div>
       <span class="xe-est__eyebrow">Ficha técnica</span>
-      <h2>XE EST8/PRO</h2>
+      <h2>Eletrostático</h2>
       <p class="xe-ficha__lead">Fone profissional moldado da linha eletrostática da Xtreme Ears, para músicos, técnicos de som e quem ouve com atenção.</p>
       <div class="xe-ficha__box">
         <h3>Incluso na caixa</h3>
@@ -336,7 +342,7 @@ body { margin: 0; background: #fff; }
     <div class="xe-molde__head">
       <span class="xe-est__eyebrow">Como comprar</span>
       <h2>Do molde ao palco</h2>
-      <p>O XE EST8/PRO é feito a partir do molde do seu ouvido. Você sabe cada passo antes de pagar.</p>
+      <p>O Eletrostático é feito a partir do molde do seu ouvido. Você sabe cada passo antes de pagar.</p>
     </div>
     <ol class="xe-molde__steps">
       <li><h3>Personalize</h3><p>Escolha cápsula, faceplate, logo e cabo no personalizador e finalize o pedido.</p></li>
@@ -393,8 +399,8 @@ body { margin: 0; background: #fff; }
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="assets/xe-est-model.js"></script>
-<script src="assets/xe-est.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script defer src="assets/xe-est-model.js"></script>
+<script defer src="assets/xe-est.js"></script>
 </body>
 </html>
