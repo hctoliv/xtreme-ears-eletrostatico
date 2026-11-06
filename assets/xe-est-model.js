@@ -1,4 +1,4 @@
-/* Xtreme Ears Eletrostático: modelo 3D procedural do fone (casco moldado, faceplate e os 8 drivers em 3 componentes Sonion).
+/* Xtreme Ears Eletrostático: modelo 3D procedural do fone (casco moldado, faceplate e os 8 drivers).
    Usa o THREE global (three@0.160.0/build/three.min.js). Compartilhado pela página e pelo render das fotos. */
 (function (global) {
   'use strict';
@@ -187,7 +187,7 @@
     return g;
   }
 
-  // Drivers no formato e na escala dos desenhos da Sonion (1 mm = 0,1 unidade da cena).
+  // Drivers em escala real (1 mm = 0,1 unidade da cena).
   // Cada driver tem os próprios materiais para o destaque (setDim) não vazar entre grupos.
   function nickelMat() { return new THREE.MeshPhysicalMaterial({ color: 0xc8cbcf, metalness: 0.92, roughness: 0.27, clearcoat: 0.25, clearcoatRoughness: 0.2 }); }
   function addSpout(g, mat, x, y, z, len) {
@@ -206,8 +206,8 @@
     g.userData.glow = [padMat];
   }
 
-  // Sonion 28UAP01 (médios): 5,25 x 5,26 x 3,05 mm, duas unidades em paralelo com a canaleta no meio, bocal Ø 1,40 mm
-  function sonion28UAP01(color) {
+  // médios: duas unidades em paralelo com a canaleta no meio e bocal redondo
+  function midDriver(color) {
     var g = new THREE.Group(), m = nickelMat();
     var L = 0.525, H = 0.526, D = 0.305, half = (D - 0.024) / 2;
     [-1, 1].forEach(function (s) { var b = new THREE.Mesh(roundedBox(L, H, half, 0.063), m); b.position.z = s * (half / 2 + 0.012); g.add(b); });
@@ -218,9 +218,8 @@
     return g;
   }
 
-  // Sonion 33AJ007i/9 (graves): duplo em tandem no encapsulamento da série 3300/3800 (aprox. 7,87 x 5,60 x 4,09 mm),
-  // emenda entre os dois motores, respiro traseiro grande e bocal Ø 1,40 mm
-  function sonion33AJ007(color) {
+  // graves: duplo em tandem (7,87 x 5,60 x 4,09 mm), emenda entre os dois motores, respiro traseiro e bocal redondo
+  function bassDriver(color) {
     var g = new THREE.Group(), m = nickelMat();
     var L = 0.787, H = 0.56, D = 0.409;
     g.add(new THREE.Mesh(roundedBox(L, H, D, 0.06), m));
@@ -234,9 +233,9 @@
     return g;
   }
 
-  // Sonion EST65QB02, tweeter: 3,55 x 2,54 x 2,80 mm em aço inox, par de cartuchos eletrostáticos com a faixa
+  // tweeter eletrostático em aço inox: par de cartuchos com a faixa
   // vermelha entre eles, flex verde com 3 contatos em cima e bocal Ø 1,40 mm na frente
-  function sonionESTTweeter(color) {
+  function estTweeter(color) {
     var g = new THREE.Group();
     var steel = new THREE.MeshPhysicalMaterial({ color: 0xd9dbde, metalness: 0.95, roughness: 0.18, clearcoat: 0.3 });
     var L = 0.355, H = 0.254, D = 0.28;
@@ -253,8 +252,8 @@
     return g;
   }
 
-  // transformador do EST65QB02: 10,95 x 5,00 x 3,70 mm, corpo translúcido com as duas bobinas e o circuito verde dentro
-  function sonionESTTransformer() {
+  // transformador dos eletrostáticos: corpo translúcido com as duas bobinas e o circuito verde dentro
+  function estTransformer() {
     var g = new THREE.Group();
     var L = 1.095, H = 0.5, D = 0.37;
     var clear = new THREE.MeshPhysicalMaterial({ color: 0xe9eef0, transmission: 0.6, roughness: 0.25, thickness: 0.2, transparent: true, opacity: 0.6, depthWrite: false });
@@ -398,21 +397,21 @@
     function place(d, pos, q) { d.position.set(pos[0], pos[1], pos[2]); d.quaternion.copy(q); d.updateMatrix(); return d; }
     function tipOf(d) { return d.userData.spoutTip.clone().applyMatrix4(d.matrix); }
 
-    // Sonion 33AJ007i/9: graves
+    // graves
     groups.bass = new THREE.Group();
-    var bd = place(sonion33AJ007(COLORS.bass), [-0.16, -0.3, -0.3], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.3, -0.35, 0.25))));
+    var bd = place(bassDriver(COLORS.bass), [-0.16, -0.3, -0.3], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.3, -0.35, 0.25))));
     groups.bass.add(bd); parts.bass.push(bd); root.add(groups.bass);
 
-    // Sonion 28UAP01: médios
+    // médios
     groups.mid = new THREE.Group();
-    var md = place(sonion28UAP01(COLORS.mid), [0.04, 0.36, -0.2], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.2, -0.3, 0.55))));
+    var md = place(midDriver(COLORS.mid), [0.04, 0.36, -0.2], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.2, -0.3, 0.55))));
     groups.mid.add(md); parts.mid.push(md); root.add(groups.mid);
 
-    // Sonion EST65QB02: dois tweeters eletrostáticos (4 unidades) junto da cânula + transformador sob o faceplate
+    // eletrostáticos: dois tweeters (4 unidades) junto da cânula + transformador sob o faceplate
     groups.est = new THREE.Group();
-    var t1d = place(sonionESTTweeter(COLORS.est), [0.3, -0.16, -0.3], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.2, 0.15, 0.05))));
-    var t2d = place(sonionESTTweeter(COLORS.est), [0.4, 0.02, -0.4], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.3, 0.05, -0.05))));
-    var xf = place(sonionESTTransformer(), [-0.3, 0.06, 0.1], new THREE.Quaternion().setFromEuler(new THREE.Euler(0.08, 0.05, Math.PI / 2 - 0.12)));
+    var t1d = place(estTweeter(COLORS.est), [0.3, -0.16, -0.3], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.2, 0.15, 0.05))));
+    var t2d = place(estTweeter(COLORS.est), [0.4, 0.02, -0.4], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.3, 0.05, -0.05))));
+    var xf = place(estTransformer(), [-0.3, 0.06, 0.1], new THREE.Quaternion().setFromEuler(new THREE.Euler(0.08, 0.05, Math.PI / 2 - 0.12)));
     [t1d, t2d].forEach(function (t) { groups.est.add(t); parts.est.push(t); });
     groups.est.add(xf);
     var xfOut = new THREE.Vector3(-0.55, 0, 0).applyMatrix4(xf.matrix);
