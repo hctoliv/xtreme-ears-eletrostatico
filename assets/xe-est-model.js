@@ -344,14 +344,14 @@
     groups.face = new THREE.Group(); groups.face.add(face);
 
     // soquete 2 pinos na borda de cima e o conector do cabo balanceado (alumínio grafite, pinos dourados)
-    var SOCK = new THREE.Vector3(0.3, 0.9, 0.44);
-    var sock = new THREE.Mesh(roundedBox(0.24, 0.12, 0.16, 0.035), new THREE.MeshPhysicalMaterial({ color: 0xdfe4ea, transmission: 0.7, roughness: 0.15, thickness: 0.1, transparent: true, opacity: 0.8 }));
+    var SOCK = new THREE.Vector3(0.6, 0.5, 0.3);
+    var sock = new THREE.Mesh(roundedBox(0.12, 0.24, 0.16, 0.035), new THREE.MeshPhysicalMaterial({ color: 0xdfe4ea, transmission: 0.7, roughness: 0.15, thickness: 0.1, transparent: true, opacity: 0.8 }));
     sock.position.copy(SOCK); groups.face.add(sock);
-    var cDir = new THREE.Vector3(-0.12, 1, -0.32).normalize(), cQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), cDir);
+    var cDir = new THREE.Vector3(1, 0.3, -0.18).normalize(), cQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), cDir);
     var goldMat = new THREE.MeshStandardMaterial({ color: 0xe3bd6a, metalness: 1, roughness: 0.18 });
     for (var pi = 0; pi < 2; pi++) {
       var pin = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.1, 10), goldMat);
-      pin.position.copy(SOCK).add(new THREE.Vector3(pi ? 0.04 : -0.04, 0.0, 0)).addScaledVector(cDir, 0.1); pin.quaternion.copy(cQ); groups.face.add(pin);
+      pin.position.copy(SOCK).add(new THREE.Vector3(0, pi ? 0.04 : -0.04, 0)).addScaledVector(cDir, 0.1); pin.quaternion.copy(cQ); groups.face.add(pin);
     }
     var gun = new THREE.MeshPhysicalMaterial({ color: 0x4b4e53, metalness: 0.88, roughness: 0.34, clearcoat: 0.4, clearcoatRoughness: 0.25 });
     var CON_LEN = 0.44, conStart = SOCK.clone().addScaledVector(cDir, 0.14);
@@ -364,13 +364,14 @@
     // cabo balanceado: 8 núcleos prateados trançados, saindo do conector e fazendo o gancho por cima da orelha
     if (opts.cable) {
       var O = conEnd;
-      var path = [O, O.clone().addScaledVector(cDir, 0.22), new THREE.Vector3(O.x - 0.2, O.y + 0.62, O.z - 0.22), new THREE.Vector3(O.x - 0.62, O.y + 0.86, O.z - 0.42),
-                  new THREE.Vector3(O.x - 1.08, O.y + 0.68, O.z - 0.6), new THREE.Vector3(O.x - 1.34, O.y + 0.12, O.z - 0.72), new THREE.Vector3(O.x - 1.4, O.y - 0.7, O.z - 0.8),
-                  new THREE.Vector3(O.x - 1.36, O.y - 1.7, O.z - 0.82)];
+      // sai para o lado de fora, sobe e passa por trás, como o gancho de orelha nas fotos reais
+      var path = [O, O.clone().addScaledVector(cDir, 0.25), new THREE.Vector3(O.x + 0.48, O.y + 0.16, O.z - 0.12), new THREE.Vector3(O.x + 0.62, O.y + 0.6, O.z - 0.32),
+                  new THREE.Vector3(O.x + 0.52, O.y + 1.2, O.z - 0.8), new THREE.Vector3(O.x + 0.28, O.y + 1.9, O.z - 1.6), new THREE.Vector3(O.x + 0.02, O.y + 2.8, O.z - 2.8),
+                  new THREE.Vector3(O.x - 0.2, O.y + 3.8, O.z - 3.9)];
       var silver = new THREE.MeshPhysicalMaterial({ color: 0xb9bdc3, metalness: 0.9, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.2 });
       var dark = new THREE.MeshPhysicalMaterial({ color: 0x3c3f44, metalness: 0.75, roughness: 0.36, clearcoat: 0.6, clearcoatRoughness: 0.2 });
       var strands = opts.lite ? [silver, dark, silver, dark] : [silver, dark, silver, dark, silver, dark, silver, dark];
-      var braid = twisted(path, strands, opts.lite ? 0.026 : 0.019, 26);
+      var braid = twisted(path, strands, opts.lite ? 0.026 : 0.019, 40);
       groups.face.add(braid);
     }
     root.add(groups.face);
@@ -436,7 +437,7 @@
     // fiação de cobre: soquete -> crossover -> cada via
     var wireMat = new THREE.MeshStandardMaterial({ color: COLORS.copper, metalness: 1, roughness: 0.35, transparent: true, opacity: 1 });
     groups.wires = new THREE.Group();
-    groups.wires.add(tube([[SOCK.x, SOCK.y - 0.06, SOCK.z - 0.04], [0.25, 0.7, 0.3], [0.16, 0.56, 0.22]], 0.007, wireMat));
+    groups.wires.add(tube([[SOCK.x - 0.06, SOCK.y, SOCK.z - 0.04], [0.4, 0.42, 0.3], [0.16, 0.5, 0.22]], 0.007, wireMat));
     [new THREE.Vector3(-0.55, 0, 0).applyMatrix4(xf.matrix).add(new THREE.Vector3(0, 1.1, 0)), new THREE.Vector3(-0.26, 0, 0).applyMatrix4(md.matrix), new THREE.Vector3(-0.39, 0, 0).applyMatrix4(bd.matrix)].forEach(function (p, i) {
       var q = i === 0 ? new THREE.Vector3(-0.3, 0.6, 0.1) : p;
       groups.wires.add(tube([[0.06, 0.42, 0.2], [(q.x + 0.06) / 2, (q.y + 0.42) / 2, Math.max(q.z, 0.05)], [q.x, q.y, q.z]], 0.0055, wireMat));

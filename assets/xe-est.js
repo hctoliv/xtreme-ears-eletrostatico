@@ -45,7 +45,7 @@
     logo.onload = logo.onerror = function () {
       model = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.42, lite: true });
       // centraliza o volume do fone no pivô
-      var box = new THREE.Box3().setFromObject(model.root), c = box.getCenter(new THREE.Vector3());
+      var box = new THREE.Box3().setFromObject(model.groups.shell), c = box.getCenter(new THREE.Vector3());
       model.root.position.sub(c);
       pivot.add(model.root);
       // compila os shaders antes do primeiro quadro para não travar no início do scroll
