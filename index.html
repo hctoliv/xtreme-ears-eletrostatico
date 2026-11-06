@@ -27,8 +27,8 @@ body { margin: 0; background: #fff; }
 .proto-thumbs { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
 .proto-thumbs a { display: block; width: 76px; border: 1px solid transparent; }
 .proto-thumbs a.is-active { border-color: #111; }
-.proto-thumbs img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
-.proto-main img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; background: #fff; }
+.proto-thumbs img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; background: #fff; }
+.proto-main img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; background: #fff; }
 .proto-details { border-top: 1px solid var(--colorBorder); }
 .proto-details details { border-bottom: 1px solid var(--colorBorder); }
 .proto-details summary { cursor: pointer; list-style: none; padding: 16px 0; font-family: var(--typeHeaderPrimary), sans-serif; letter-spacing: 0.2em; font-size: 13px; text-transform: uppercase; display: flex; justify-content: space-between; }
@@ -108,9 +108,9 @@ body { margin: 0; background: #fff; }
     <canvas class="xe-ana__canvas" aria-hidden="true"></canvas>
     <div class="xe-ana__fallback"><img src="fotos/xe-est8-pro-3-1000.webp" width="1000" height="750" loading="lazy" decoding="async" alt="Vista explodida do Eletrostático"></div>
     <div class="xe-ana__labels" aria-hidden="true">
-      <div class="xe-ana__label" data-k="est"><span>4 eletrostáticos</span></div>
-      <div class="xe-ana__label" data-k="mid"><span>2 médios</span></div>
-      <div class="xe-ana__label" data-k="bass"><span>2 graves</span></div>
+      <div class="xe-ana__label" data-k="est"><span>Sonion EST65QB02 · 4 eletrostáticos</span></div>
+      <div class="xe-ana__label" data-k="mid"><span>Sonion 28UAP01 · 2 médios</span></div>
+      <div class="xe-ana__label" data-k="bass"><span>Sonion 33AJ007i/9 · 2 graves</span></div>
       <div class="xe-ana__label" data-k="pcb"><span>Crossover 3 vias</span></div>
     </div>
     <div class="xe-ana__copy">
@@ -123,17 +123,17 @@ body { margin: 0; background: #fff; }
       <div class="xe-ana__step">
         <span class="xe-ana__count" style="color:var(--xe-est)">4<small>eletrostáticos</small></span>
         <h2>Altas e super altas</h2>
-        <p>Película ultrafina entre dois estatores perfurados. Pratos, respiração e ambiência com velocidade e ar de sobra.</p>
+        <p>Sonion EST65QB02: dois tweeters de aço inox, cada um com um par de cartuchos eletrostáticos, e um transformador miniatura que alimenta os quatro. Pratos, respiração e ambiência com velocidade e ar de sobra.</p>
       </div>
       <div class="xe-ana__step">
         <span class="xe-ana__count" style="color:var(--xe-mid)">2<small>drivers</small></span>
         <h2>Médios</h2>
-        <p>Voz, guitarra e teclado no centro do retorno, com corpo e articulação.</p>
+        <p>Sonion 28UAP01, um driver duplo dedicado à região onde moram voz, guitarra e teclado. Corpo e articulação no centro do retorno.</p>
       </div>
       <div class="xe-ana__step">
         <span class="xe-ana__count" style="color:var(--xe-bass)">2<small>drivers</small></span>
         <h2>Graves</h2>
-        <p>Bumbo e baixo com peso e definição, sem invadir os médios.</p>
+        <p>Sonion 33AJ007i/9, driver duplo de graves. Bumbo e baixo com peso e definição, sem invadir os médios.</p>
       </div>
       <div class="xe-ana__step">
         <span class="xe-ana__count" style="color:var(--xe-pcb)">3<small>vias</small></span>
@@ -143,7 +143,7 @@ body { margin: 0; background: #fff; }
       <div class="xe-ana__step">
         <span class="xe-est__eyebrow">Moldado no seu ouvido</span>
         <h2>Tudo isso dentro de um corpo feito sob medida.</h2>
-        <p>Isolamento do molde, encaixe que não sai do lugar no palco e três tubos de som até a ponta da cânula.</p>
+        <p>Isolamento do molde, encaixe que não sai do lugar no palco e um tubo de som de cada driver até a ponta da cânula.</p>
         <a class="xe-ana__skip" href="#produto">Personalizar o meu</a>
       </div>
     </div>
@@ -220,7 +220,7 @@ body { margin: 0; background: #fff; }
               <details open>
                 <summary>Descrição</summary>
                 <div class="rte">
-                  <p><strong>O Eletrostático leva esse som para a linha de moldados da Xtreme Ears.</strong> São oito drivers em um crossover de três vias: quatro eletrostáticos cuidam das altas e super altas, dois drivers ficam com os médios e dois com os graves.</p>
+                  <p><strong>O Eletrostático leva esse som para a linha de moldados da Xtreme Ears.</strong> São oito drivers em um crossover de três vias: quatro eletrostáticos cuidam das altas e super altas, dois drivers ficam com os médios e dois com os graves. Os três componentes são Sonion, fabricante dinamarquesa de drivers para fones profissionais: EST65QB02, 28UAP01 e 33AJ007i/9. Acompanha cabo balanceado de 8 núcleos prateados com conector 2 pinos.</p>
                   <p>O eletrostático move uma película ultrafina com campo elétrico, sem bobina no caminho. O resultado são agudos rápidos, abertos e cheios de ar, que somam detalhe sem cansar o ouvido em shows longos.</p>
                 </div>
               </details>
@@ -238,9 +238,10 @@ body { margin: 0; background: #fff; }
 
         <div class="grid__item medium-up--one-half">
           <div class="product__photos" data-xe="galeria">
-            <div class="proto-main"><img data-xe-main src="fotos/xe-est8-pro-0-1000.webp" srcset="fotos/xe-est8-pro-0-1000.webp 1000w, fotos/xe-est8-pro-0.webp 1600w" sizes="(min-width: 769px) 50vw, 100vw" loading="lazy" decoding="async" alt="Par de fones Eletrostático com faceplate preto e flocos dourados, corpo em acrílico transparente" width="1600" height="1200"></div>
+            <div class="proto-main"><img data-xe-main src="fotos/xe-est8-pro-hero-1000.webp" srcset="fotos/xe-est8-pro-hero-1000.webp 1000w, fotos/xe-est8-pro-hero.webp 2000w" sizes="(min-width: 769px) 50vw, 100vw" loading="lazy" decoding="async" alt="Par do Fone In Ear Eletrostático com faceplate preto e folha de ouro e cabo balanceado de 8 núcleos" width="2000" height="2000"></div>
             <div class="proto-thumbs">
-              <a href="fotos/xe-est8-pro-0.webp" data-xe-thumb class="is-active"><img src="fotos/xe-est8-pro-0-thumb.webp" width="200" height="150" decoding="async" alt="Par de fones Eletrostático de frente" loading="lazy"></a>
+              <a href="fotos/xe-est8-pro-hero.webp" data-xe-thumb class="is-active"><img src="fotos/xe-est8-pro-hero-thumb.webp" width="200" height="200" decoding="async" alt="Foto principal do par Eletrostático" loading="lazy"></a>
+              <a href="fotos/xe-est8-pro-0.webp" data-xe-thumb><img src="fotos/xe-est8-pro-0-thumb.webp" width="200" height="150" decoding="async" alt="Par de fones Eletrostático de frente" loading="lazy"></a>
               <a href="fotos/xe-est8-pro-2.webp" data-xe-thumb><img src="fotos/xe-est8-pro-2-thumb.webp" width="200" height="150" decoding="async" alt="Eletrostático de perfil com os drivers aparentes" loading="lazy"></a>
               <a href="fotos/xe-est8-pro-1.webp" data-xe-thumb><img src="fotos/xe-est8-pro-1-thumb.webp" width="200" height="150" decoding="async" alt="Eletrostático mostrando o corpo moldado e a cânula" loading="lazy"></a>
               <a href="fotos/xe-est8-pro-3.webp" data-xe-thumb><img src="fotos/xe-est8-pro-3-thumb.webp" width="200" height="150" decoding="async" alt="Vista explodida do Eletrostático com os oito drivers" loading="lazy"></a>
@@ -291,9 +292,9 @@ body { margin: 0; background: #fff; }
     <label class="visually-hidden" for="xe-varre-f">Frequência</label>
     <input id="xe-varre-f" class="xe-varre__input" type="range" min="0" max="1000" value="597">
     <div class="xe-varre__drivers">
-      <div class="xe-varre__drv" data-k="bass"><b>2</b><span>Drivers de graves</span><div class="bar"><i></i></div></div>
-      <div class="xe-varre__drv" data-k="mid"><b>2</b><span>Drivers de médios</span><div class="bar"><i></i></div></div>
-      <div class="xe-varre__drv" data-k="est"><b>4</b><span>Eletrostáticos para altas e super altas</span><div class="bar"><i></i></div></div>
+      <div class="xe-varre__drv" data-k="bass"><b>2</b><span>Graves · Sonion 33AJ007i/9</span><div class="bar"><i></i></div></div>
+      <div class="xe-varre__drv" data-k="mid"><b>2</b><span>Médios · Sonion 28UAP01</span><div class="bar"><i></i></div></div>
+      <div class="xe-varre__drv" data-k="est"><b>4</b><span>Altas e super altas · Sonion EST65QB02</span><div class="bar"><i></i></div></div>
     </div>
     <div class="xe-varre__foot">
       <span>Faixas ilustrativas de cada via do crossover. Abaixo de 20 Hz o grave é mais sentido do que ouvido.</span>
@@ -324,10 +325,11 @@ body { margin: 0; background: #fff; }
     <table class="xe-ficha__table">
       <tbody>
         <tr><th scope="row">Drivers</th><td>8 no total</td></tr>
-        <tr><th scope="row">Altas e super altas</th><td><span class="xe-ficha__dot" style="background:#c9a25a"></span>4 eletrostáticos</td></tr>
-        <tr><th scope="row">Médios</th><td><span class="xe-ficha__dot" style="background:#6f97c9"></span>2 drivers</td></tr>
-        <tr><th scope="row">Graves</th><td><span class="xe-ficha__dot" style="background:#c8643c"></span>2 drivers</td></tr>
+        <tr><th scope="row">Altas e super altas</th><td><span class="xe-ficha__dot" style="background:#c9a25a"></span>4 eletrostáticos, Sonion EST65QB02</td></tr>
+        <tr><th scope="row">Médios</th><td><span class="xe-ficha__dot" style="background:#6f97c9"></span>2 drivers, Sonion 28UAP01</td></tr>
+        <tr><th scope="row">Graves</th><td><span class="xe-ficha__dot" style="background:#c8643c"></span>2 drivers, Sonion 33AJ007i/9</td></tr>
         <tr><th scope="row">Crossover</th><td>3 vias</td></tr>
+        <tr><th scope="row">Cabo</th><td>Balanceado, 8 núcleos prateados, conector 2 pinos</td></tr>
         <tr><th scope="row">Impedância</th><td>19 Ω</td></tr>
         <tr><th scope="row">Sensibilidade</th><td>115 dB</td></tr>
         <tr><th scope="row">Resposta de frequência</th><td>10 Hz a 24 kHz</td></tr>

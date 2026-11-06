@@ -144,7 +144,7 @@
         var x = Math.round((v3.x + 1) / 2 * w), y = Math.round((1 - v3.y) / 2 * h);
         var op = show ? (FOCUS[i] === key ? 1 : 0.38) : 0;
         var ls = labelState[key] || (labelState[key] = {});
-        if (ls.x !== x || ls.y !== y) { l.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) translate(-50%,-50%)'; ls.x = x; ls.y = y; }
+        if (ls.x !== x || ls.y !== y) { l.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) translate(-5px,-50%)'; ls.x = x; ls.y = y; }
         if (ls.op !== op) { l.style.opacity = op; l.classList.toggle('is-on', show); ls.op = op; }
       }
       if (calm < 0.5) raf = requestAnimationFrame(tick);

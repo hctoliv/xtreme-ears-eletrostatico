@@ -1,4 +1,4 @@
-/* Xtreme Ears Eletrostático: modelo 3D procedural do fone (casco moldado, faceplate e os 8 drivers).
+/* Xtreme Ears Eletrostático: modelo 3D procedural do fone (casco moldado, faceplate e os 8 drivers em 3 componentes Sonion).
    Usa o THREE global (three@0.160.0/build/three.min.js). Compartilhado pela página e pelo render das fotos. */
 (function (global) {
   'use strict';
@@ -11,10 +11,10 @@
     copper: 0xb87333
   };
 
-  // Contorno do faceplate, tirado das fotos dos moldados Xtreme Ears: borda reta do lado do cabo (+x),
-  // topo e costas arredondados, base afinando numa ponta do lado da borda reta.
-  var OUTLINE_PTS = [[0.5, 0.64], [0.18, 0.8], [-0.22, 0.76], [-0.52, 0.5], [-0.62, 0.1], [-0.52, -0.28], [-0.27, -0.54],
-                     [0.03, -0.72], [0.3, -0.82], [0.48, -0.7], [0.56, -0.38], [0.58, 0.05], [0.57, 0.42]];
+  // Contorno do faceplate tirado do vídeo do fone real: gota larga e arredondada em cima,
+  // lado da cânula (+x) mais reto, afinando numa ponta embaixo.
+  var OUTLINE_PTS = [[0.0, 0.82], [-0.38, 0.72], [-0.6, 0.4], [-0.6, 0.0], [-0.44, -0.38], [-0.18, -0.68], [0.1, -0.9],
+                     [0.26, -0.82], [0.38, -0.5], [0.48, -0.06], [0.47, 0.4], [0.28, 0.74]];
   var outlineCache = null;
   function outlinePoints(n) {
     if (outlineCache && outlineCache.length === n) return outlineCache;
@@ -37,10 +37,11 @@
   // Abaixo do faceplate ele estufa para o lado arredondado: a concha embaixo e o lóbulo da hélix no alto,
   // para trás. A cânula sai da parte baixa da frente, sob a borda reta, e entra no ouvido.
   var TOP = 0.42;
-  var CANAL_DIR = new THREE.Vector3(0.55, -0.22, -0.8).normalize();
-  var BODY_DEPTH = 1.02;
-  var BODY_END = new THREE.Vector3(0.34, -0.36, TOP - BODY_DEPTH);
-  var CANAL_LEN = 0.46;
+  // no vídeo o corpo é um bulbo cheio e a cânula é longa, saindo de lado com um colarinho perto da ponta
+  var CANAL_DIR = new THREE.Vector3(0.74, -0.12, -0.66).normalize();
+  var BODY_DEPTH = 1.12;
+  var BODY_END = new THREE.Vector3(0.3, -0.24, TOP - BODY_DEPTH);
+  var CANAL_LEN = 0.66, CANAL_R = 0.2, TIP_R = 0.15;
   function smooth(e0, e1, x) { var t = Math.min(Math.max((x - e0) / (e1 - e0), 0), 1); return t * t * (3 - 2 * t); }
   function shellGeometry() {
     var RINGS = 72, SEG = 140;
@@ -55,15 +56,17 @@
         var v = u / split;
         var k = smooth(0.35, 1, v);
         cx = BODY_END.x * k; cy = BODY_END.y * k; cz = TOP - BODY_DEPTH * v;
-        // quase cheio no primeiro terço, depois afina até a boca da cânula
-        sc = (1 + 0.1 * Math.sin(Math.min(v / 0.45, 1) * Math.PI)) * (1 - 0.7 * smooth(0.3, 1, v));
-        m = smooth(0.55, 1, v); r = 0.3;
+        // bulbo: estufa bem no primeiro terço e só depois afina até a boca da cânula
+        // domo: quase do tamanho do faceplate logo abaixo dele e arredondando até a boca da cânula
+        sc = Math.max(0.3, (1 + 0.04 * Math.sin(Math.min(v / 0.35, 1) * Math.PI)) * Math.sqrt(Math.max(1 - Math.pow(v, 2.4) * 0.92, 0)));
+        m = smooth(0.6, 1, v); r = 0.27;
       } else {
         var w = (u - split) / (1 - split);
         var c = BODY_END.clone().addScaledVector(CANAL_DIR, CANAL_LEN * w);
         cx = c.x; cy = c.y; cz = c.z; sc = 1; m = 1;
-        r = 0.3 - 0.06 * w;
-        if (w > 0.9) r *= Math.sqrt(Math.max(1 - Math.pow((w - 0.9) / 0.1, 2), 0.0004)) * 0.4 + 0.6 * (1 - (w - 0.9) / 0.1) + 0.0;
+        r = 0.27 - (0.27 - CANAL_R) * smooth(0, 0.35, w);
+        if (w > 0.74 && w < 0.9) r += 0.035 * Math.sin((w - 0.74) / 0.16 * Math.PI);   // colarinho
+        if (w > 0.94) r *= 0.75 + 0.25 * Math.sqrt(Math.max(1 - Math.pow((w - 0.94) / 0.06, 2), 0));
       }
       var vv = Math.min(u / split, 1);
       var bulge = Math.sin(Math.min(vv / 0.7, 1) * Math.PI) * (1 - m);
@@ -71,7 +74,7 @@
         var a = (j / SEG) * Math.PI * 2;
         var px = ol[j].x, py = ol[j].y;
         var len = Math.hypot(px, py) || 1, dx = px / len, dy = py / len;
-        var e = 1 + bulge * (0.3 * Math.pow(Math.max(0, dx * bowl.x + dy * bowl.y), 1.4) + 0.26 * Math.pow(Math.max(0, dx * helix.x + dy * helix.y), 2.5));
+        var e = 1 + bulge * (0.1 * Math.pow(Math.max(0, dx * bowl.x + dy * bowl.y), 1.4) + 0.08 * Math.pow(Math.max(0, dx * helix.x + dy * helix.y), 2.5));
         var ox = px * sc * e, oy = py * sc * e;
         var qx = Math.cos(a) * r, qy = Math.sin(a) * r * 0.88;
         pos.push(cx + ox * (1 - m) + qx * m, cy + oy * (1 - m) + qy * m, cz);
@@ -104,49 +107,66 @@
     return g;
   }
 
-  // Faceplate preto com flocos dourados e o X da marca
-  function faceplateTexture(logo, mirror) {
-    var tex = canvasTex(1024, 1300, function (ctx, w, h) {
-      var g = ctx.createRadialGradient(w * 0.45, h * 0.4, 20, w * 0.5, h * 0.5, w * 0.7);
-      g.addColorStop(0, '#1b1a17'); g.addColorStop(1, '#050505');
-      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-      for (var i = 0; i < 3400; i++) {
-        var x = Math.random() * w, y = Math.random() * h, s = Math.random() * 3.2 + 0.4;
-        var l = 45 + Math.random() * 35;
-        ctx.fillStyle = 'hsla(' + (38 + Math.random() * 10) + ',70%,' + l + '%,' + (0.25 + Math.random() * 0.6) + ')';
-        ctx.save(); ctx.translate(x, y); ctx.rotate(Math.random() * 3); ctx.fillRect(-s, -s * 0.5, s * 2, s); ctx.restore();
-      }
-      if (logo && logo.complete && logo.naturalWidth) {
-        // recorta só o X do logo oficial e pinta de champanhe
-        var sw = logo.naturalWidth, sh = logo.naturalHeight;
-        var sx = sw * 0.08, sy = sh * 0.14, cw = sw * 0.34, chh = sh * 0.72;
-        var dw = w * 0.4, dh = dw * chh / cw;
-        var tmp = document.createElement('canvas'); tmp.width = dw; tmp.height = dh;
-        var t = tmp.getContext('2d');
-        t.drawImage(logo, sx, sy, cw, chh, 0, 0, dw, dh);
-        t.globalCompositeOperation = 'source-in';
-        var lg = t.createLinearGradient(0, 0, dw, dh);
-        lg.addColorStop(0, '#f3dca2'); lg.addColorStop(0.5, '#c99a4a'); lg.addColorStop(1, '#f0d48f');
-        t.fillStyle = lg; t.fillRect(0, 0, dw, dh);
-        ctx.drawImage(tmp, (w - dw) / 2 - w * 0.03, (h - dh) / 2 + h * 0.02);
-      }
+  // Faceplate realista: resina preta funda com folha de ouro em lascas irregulares sob o verniz,
+  // e o X da marca em metal. Gera mapas de cor, metal, rugosidade e relevo com o mesmo sorteio,
+  // para as lascas brilharem como metal e o fundo ficar com cara de resina polida.
+  function rng(seed) { return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
+  function faceplateMaps(logo, mirror) {
+    var W = 1536, H = 2360, r = rng(1234567);
+    var flakes = [];
+    for (var i = 0; i < 5200; i++) {
+      var big = r() < 0.025;
+      var sz = big ? 8 + r() * 16 : 1.2 + Math.pow(r(), 2.6) * 7;
+      var n = 4 + Math.floor(r() * 4), pts = [];
+      for (var k = 0; k < n; k++) { var a = k / n * Math.PI * 2 + r() * 0.6, rr = sz * (0.45 + r() * 0.75); pts.push([Math.cos(a) * rr, Math.sin(a) * rr * (0.5 + r() * 0.6)]); }
+      flakes.push({ x: r() * W, y: r() * H, rot: r() * 6.3, pts: pts, big: big, hue: 36 + r() * 12, lum: 42 + r() * 36, a: big ? 0.35 + r() * 0.35 : 0.55 + r() * 0.45, tilt: r() });
+    }
+    function poly(ctx, f) { ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.beginPath(); f.pts.forEach(function (p, k) { if (k) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    var logoCanvas = null;
+    if (logo && logo.complete && logo.naturalWidth) {
+      var sw = logo.naturalWidth, sh = logo.naturalHeight, sx = sw * 0.08, sy = sh * 0.14, cw = sw * 0.34, chh = sh * 0.72;
+      var dw = Math.round(W * 0.36), dh = Math.round(dw * chh / cw);
+      logoCanvas = document.createElement('canvas'); logoCanvas.width = dw; logoCanvas.height = dh;
+      logoCanvas.getContext('2d').drawImage(logo, sx, sy, cw, chh, 0, 0, dw, dh);
+    }
+    function logoAt(ctx, fill) {
+      if (!logoCanvas) return;
+      var t = document.createElement('canvas'); t.width = logoCanvas.width; t.height = logoCanvas.height;
+      var c = t.getContext('2d'); c.drawImage(logoCanvas, 0, 0); c.globalCompositeOperation = 'source-in';
+      c.fillStyle = typeof fill === 'function' ? fill(c, t.width, t.height) : fill; c.fillRect(0, 0, t.width, t.height);
+      ctx.drawImage(t, (W - t.width) / 2 - W * 0.02, (H - t.height) / 2 + H * 0.03);
+    }
+    function make(draw, color) {
+      var tex = canvasTex(W, H, draw);
+      if (!color) tex.colorSpace = THREE.NoColorSpace;
+      if (mirror) { tex.wrapS = THREE.RepeatWrapping; tex.repeat.x = -1; tex.offset.x = 1; }
+      return tex;
+    }
+    var map = make(function (ctx) {
+      var g = ctx.createRadialGradient(W * 0.42, H * 0.36, 40, W * 0.5, H * 0.5, W * 0.75);
+      g.addColorStop(0, '#15130f'); g.addColorStop(0.6, '#0a0908'); g.addColorStop(1, '#040404');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      flakes.forEach(function (f) {
+        ctx.fillStyle = 'hsla(' + f.hue + ',' + (55 + f.tilt * 25) + '%,' + f.lum + '%,' + f.a + ')'; poly(ctx, f);
+      });
+      logoAt(ctx, function (c, w, h) { var lg = c.createLinearGradient(0, 0, w, h); lg.addColorStop(0, '#f6e2b0'); lg.addColorStop(0.45, '#c9994c'); lg.addColorStop(1, '#efd08c'); return lg; });
+    }, true);
+    var metal = make(function (ctx) {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+      flakes.forEach(function (f) { var v = Math.round(160 + f.tilt * 95); ctx.fillStyle = 'rgba(' + v + ',' + v + ',' + v + ',' + Math.min(1, f.a + 0.2) + ')'; poly(ctx, f); });
+      logoAt(ctx, '#fff');
     });
-    if (mirror) { tex.wrapS = THREE.RepeatWrapping; tex.repeat.x = -1; tex.offset.x = 1; }
-    return tex;
-  }
-
-  // Estator perfurado: grade de furos sobre película dourada
-  function statorTexture() {
-    return canvasTex(256, 170, function (ctx, w, h) {
-      ctx.fillStyle = '#2a2622'; ctx.fillRect(0, 0, w, h);
-      var g = ctx.createLinearGradient(0, 0, w, h);
-      g.addColorStop(0, '#f1d391'); g.addColorStop(0.5, '#b8873f'); g.addColorStop(1, '#ecc77a');
-      ctx.fillStyle = g; ctx.fillRect(10, 10, w - 20, h - 20);
-      ctx.fillStyle = '#17130f';
-      for (var y = 22; y < h - 14; y += 13) for (var x = 22 + ((y / 13) % 2) * 6; x < w - 14; x += 12) {
-        ctx.beginPath(); ctx.arc(x, y, 3.2, 0, 7); ctx.fill();
-      }
+    var rough = make(function (ctx) {
+      ctx.fillStyle = '#2a2a2a'; ctx.fillRect(0, 0, W, H);
+      flakes.forEach(function (f) { var v = Math.round(50 + f.tilt * 90); ctx.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')'; poly(ctx, f); });
+      logoAt(ctx, '#4a4a4a');
     });
+    var bump = make(function (ctx) {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+      flakes.forEach(function (f) { var v = Math.round(40 + f.tilt * 120); ctx.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')'; poly(ctx, f); });
+      logoAt(ctx, '#9a9a9a');
+    });
+    return { map: map, metalnessMap: metal, roughnessMap: rough, bumpMap: bump };
   }
 
   function labelTexture(text, color) {
@@ -167,40 +187,104 @@
     return g;
   }
 
-  // Driver de armadura balanceada: cubo de alumínio claro com os contatos laranja na face traseira
-  function baDriver(w, h, d, color) {
-    var g = new THREE.Group();
-    var body = new THREE.Mesh(roundedBox(w, h, d, 0.012), new THREE.MeshPhysicalMaterial({ color: 0xc4c7cb, metalness: 0.75, roughness: 0.3, clearcoat: 0.3 }));
-    g.add(body);
-    var padMat = new THREE.MeshStandardMaterial({ color: 0xe8742a, emissive: color, emissiveIntensity: 0.2, metalness: 0.4, roughness: 0.35 });
-    for (var r = 0; r < 2; r++) for (var c = 0; c < 2; c++) {
-      var pad = new THREE.Mesh(new THREE.BoxGeometry(w * 0.32, h * 0.12, 0.01), padMat);
-      pad.position.set((c - 0.5) * w * 0.44, (r - 0.5) * h * 0.46, -d / 2 - 0.006);
-      g.add(pad);
-    }
-    var spout = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.08, 20), new THREE.MeshStandardMaterial({ color: 0x8a8d92, metalness: 1, roughness: 0.25 }));
-    spout.rotation.z = Math.PI / 2; spout.position.set(w / 2 + 0.035, 0, 0);
-    g.add(spout);
+  // Drivers no formato e na escala dos desenhos da Sonion (1 mm = 0,1 unidade da cena).
+  // Cada driver tem os próprios materiais para o destaque (setDim) não vazar entre grupos.
+  function nickelMat() { return new THREE.MeshPhysicalMaterial({ color: 0xc8cbcf, metalness: 0.92, roughness: 0.27, clearcoat: 0.25, clearcoatRoughness: 0.2 }); }
+  function addSpout(g, mat, x, y, z, len) {
+    var sp = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, len, 28), mat);
+    sp.rotation.z = Math.PI / 2; sp.position.set(x + len / 2, y, z); g.add(sp);
+    var hole = new THREE.Mesh(new THREE.CircleGeometry(0.045, 20), new THREE.MeshBasicMaterial({ color: 0x0a0a0a }));
+    hole.rotation.y = Math.PI / 2; hole.position.set(x + len + 0.001, y, z); g.add(hole);
+    g.userData.spoutTip = new THREE.Vector3(x + len, y, z);
+  }
+  function addPads(g, x, H, D, color) {
+    var padMat = new THREE.MeshStandardMaterial({ color: 0xd39a52, emissive: color, emissiveIntensity: 0.2, metalness: 0.9, roughness: 0.3 });
+    [[-0.22, -0.2], [-0.22, 0.2], [0.22, -0.2], [0.22, 0.2]].forEach(function (o) {
+      var pad = new THREE.Mesh(new THREE.BoxGeometry(0.012, H * 0.16, D * 0.22), padMat);
+      pad.position.set(x - 0.006, o[0] * H, o[1] * D); g.add(pad);
+    });
     g.userData.glow = [padMat];
+  }
+
+  // Sonion 28UAP01 (médios): 5,25 x 5,26 x 3,05 mm, duas unidades em paralelo com a canaleta no meio, bocal Ø 1,40 mm
+  function sonion28UAP01(color) {
+    var g = new THREE.Group(), m = nickelMat();
+    var L = 0.525, H = 0.526, D = 0.305, half = (D - 0.024) / 2;
+    [-1, 1].forEach(function (s) { var b = new THREE.Mesh(roundedBox(L, H, half, 0.063), m); b.position.z = s * (half / 2 + 0.012); g.add(b); });
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(L * 0.9, H * 0.86, 0.03), m));
+    addSpout(g, m, L / 2, -0.01, 0, 0.16);
+    addPads(g, -L / 2, H, D, color);
+    g.userData.size = [L, H, D];
     return g;
   }
 
-  // Unidade eletrostática: dois estatores perfurados com a película no meio
-  function estDriver(tex) {
+  // Sonion 33AJ007i/9 (graves): duplo em tandem no encapsulamento da série 3300/3800 (aprox. 7,87 x 5,60 x 4,09 mm),
+  // emenda entre os dois motores, respiro traseiro grande e bocal Ø 1,40 mm
+  function sonion33AJ007(color) {
+    var g = new THREE.Group(), m = nickelMat();
+    var L = 0.787, H = 0.56, D = 0.409;
+    g.add(new THREE.Mesh(roundedBox(L, H, D, 0.06), m));
+    var seam = new THREE.Mesh(new THREE.BoxGeometry(L + 0.006, 0.012, D + 0.006), new THREE.MeshStandardMaterial({ color: 0x5b5e63, metalness: 0.8, roughness: 0.4 }));
+    g.add(seam);
+    var vent = new THREE.Mesh(new THREE.CircleGeometry(0.06, 24), new THREE.MeshBasicMaterial({ color: 0x0c0c0c }));
+    vent.rotation.x = -Math.PI / 2; vent.position.set(-L * 0.28, H / 2 + 0.003, 0); g.add(vent);
+    addSpout(g, m, L / 2, 0.08, 0, 0.16);
+    addPads(g, -L / 2, H, D, color);
+    g.userData.size = [L, H, D];
+    return g;
+  }
+
+  // Sonion EST65QB02, tweeter: 3,55 x 2,54 x 2,80 mm em aço inox, par de cartuchos eletrostáticos com a faixa
+  // vermelha entre eles, flex verde com 3 contatos em cima e bocal Ø 1,40 mm na frente
+  function sonionESTTweeter(color) {
     var g = new THREE.Group();
-    var w = 0.3, h = 0.2;
-    var statorMat = new THREE.MeshPhysicalMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.3, metalness: 0.25, roughness: 0.35, clearcoat: 0.8, side: THREE.DoubleSide });
-    var frameMat = new THREE.MeshStandardMaterial({ color: 0x24201b, metalness: 0.6, roughness: 0.4 });
-    var filmMat = new THREE.MeshPhysicalMaterial({ color: COLORS.est, emissive: COLORS.est, emissiveIntensity: 0.35, metalness: 0.2, roughness: 0.15, transmission: 0.4, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
-    var frame = new THREE.Mesh(roundedBox(w + 0.03, h + 0.03, 0.05, 0.02), frameMat);
-    g.add(frame);
-    var front = new THREE.Mesh(new THREE.PlaneGeometry(w, h), statorMat); front.position.z = 0.037; g.add(front);
-    var back = front.clone(); back.position.z = -0.037; back.rotation.y = Math.PI; g.add(back);
-    var film = new THREE.Mesh(new THREE.PlaneGeometry(w * 0.94, h * 0.9, 24, 16), filmMat);
-    g.add(film);
-    g.userData.film = film;
-    g.userData.glow = [filmMat];
-    g.userData.stator = statorMat;
+    var steel = new THREE.MeshPhysicalMaterial({ color: 0xd9dbde, metalness: 0.95, roughness: 0.18, clearcoat: 0.3 });
+    var L = 0.355, H = 0.254, D = 0.28;
+    g.add(new THREE.Mesh(roundedBox(L, H, D, 0.028), steel));
+    var band = new THREE.Mesh(new THREE.BoxGeometry(L + 0.012, 0.026, D + 0.012), new THREE.MeshStandardMaterial({ color: 0xb02a2a, roughness: 0.45 }));
+    g.add(band);
+    var flex = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.012, 0.2), new THREE.MeshStandardMaterial({ color: 0x1f7a45, roughness: 0.45 }));
+    flex.position.set(-0.07, H / 2 + 0.01, 0); g.add(flex);
+    var padMat = new THREE.MeshStandardMaterial({ color: 0xe0b45e, emissive: color, emissiveIntensity: 0.25, metalness: 1, roughness: 0.25 });
+    for (var i = 0; i < 3; i++) { var p = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.008, 0.045), padMat); p.position.set(-0.12, H / 2 + 0.019, (i - 1) * 0.055); g.add(p); }
+    addSpout(g, steel, L / 2, 0, 0, 0.122);
+    g.userData.glow = [padMat];
+    g.userData.size = [L, H, D];
+    return g;
+  }
+
+  // transformador do EST65QB02: 10,95 x 5,00 x 3,70 mm, corpo translúcido com as duas bobinas e o circuito verde dentro
+  function sonionESTTransformer() {
+    var g = new THREE.Group();
+    var L = 1.095, H = 0.5, D = 0.37;
+    var clear = new THREE.MeshPhysicalMaterial({ color: 0xe9eef0, transmission: 0.6, roughness: 0.25, thickness: 0.2, transparent: true, opacity: 0.6, depthWrite: false });
+    var box = new THREE.Mesh(roundedBox(L, H, D, 0.03), clear); box.renderOrder = 3; g.add(box);
+    var pcbm = new THREE.MeshStandardMaterial({ color: 0x1f7a45, roughness: 0.5 });
+    var strip = new THREE.Mesh(new THREE.BoxGeometry(L * 0.9, 0.02, D * 0.8), pcbm); strip.position.y = H * 0.28; g.add(strip);
+    var coil = new THREE.MeshStandardMaterial({ color: 0x3a2a1c, metalness: 0.6, roughness: 0.4 });
+    [-0.24, 0.24].forEach(function (x) {
+      var c = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.26, 0.26), coil); c.position.set(x, -0.04, 0); g.add(c);
+      var cu = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.3, 24), new THREE.MeshStandardMaterial({ color: COLORS.copper, metalness: 1, roughness: 0.35 }));
+      cu.rotation.z = Math.PI / 2; cu.position.set(x, -0.04, 0); g.add(cu);
+    });
+    g.userData.size = [L, H, D];
+    return g;
+  }
+
+  // par trançado (fios vermelho e verde do transformador até cada tweeter)
+  function twisted(points, colors, radius, turns) {
+    var g = new THREE.Group();
+    var curve = new THREE.CatmullRomCurve3(points.map(function (p) { return p.isVector3 ? p.clone() : new THREE.Vector3(p[0], p[1], p[2]); }));
+    var N = 90, fr = curve.computeFrenetFrames(N, false);
+    colors.forEach(function (col, s) {
+      var pts = [];
+      for (var i = 0; i <= N; i++) {
+        var u = i / N, c = curve.getPointAt(u), a = u * turns * Math.PI * 2 + s * Math.PI * 2 / colors.length;
+        pts.push(c.clone().addScaledVector(fr.normals[i], Math.cos(a) * radius * 1.1).addScaledVector(fr.binormals[i], Math.sin(a) * radius * 1.1));
+      }
+      var mat = col.isMaterial ? col : new THREE.MeshStandardMaterial({ color: col, roughness: 0.45, metalness: 0.2 });
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), N * 2, radius, 6, false), mat));
+    });
     return g;
   }
 
@@ -231,19 +315,19 @@
 
     // ponta da cânula: tampa, três furos de saída e o anel vermelho do lado direito
     var nozzleDir = CANAL_DIR.clone();
-    var endFrame = { r: 0.24 };
+    var endFrame = { r: TIP_R };
     var tip = canalEnd();
     var nozzleBase = BODY_END.clone();
     var tipCap = new THREE.Mesh(new THREE.CircleGeometry(endFrame.r * 1.0, 48), shellMat);
     tipCap.position.copy(tip); tipCap.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), nozzleDir);
     groups.shell.add(tipCap);
     var sideMat = new THREE.MeshStandardMaterial({ color: opts.mirror ? 0x2d6bd6 : 0xd62d2d, roughness: 0.4, transparent: true, opacity: 0.9 });
-    var ring = new THREE.Mesh(new THREE.TorusGeometry(endFrame.r * 0.72, 0.012, 8, 48), sideMat);
-    ring.position.copy(tip).addScaledVector(nozzleDir, -0.12); ring.quaternion.copy(tipCap.quaternion);
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(CANAL_R * 1.02, 0.012, 8, 48), sideMat);
+    ring.position.copy(tip).addScaledVector(nozzleDir, -0.36); ring.quaternion.copy(tipCap.quaternion);
     groups.shell.add(ring);
     var boreMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0c, roughness: 0.6 });
-    [[-0.07, 0.03], [0.06, 0.05], [0, -0.07]].forEach(function (o) {
-      var bore = new THREE.Mesh(new THREE.CircleGeometry(0.035, 20), boreMat);
+    [[-0.055, 0.03], [0.055, 0.03], [0, -0.06]].forEach(function (o) {
+      var bore = new THREE.Mesh(new THREE.CircleGeometry(0.03, 20), boreMat);
       var side = new THREE.Vector3(1, 0, 0).applyQuaternion(tipCap.quaternion), up = new THREE.Vector3(0, 1, 0).applyQuaternion(tipCap.quaternion);
       bore.position.copy(tip).addScaledVector(side, o[0]).addScaledVector(up, o[1]).addScaledVector(nozzleDir, 0.002);
       bore.quaternion.copy(tipCap.quaternion);
@@ -252,119 +336,112 @@
     root.add(groups.shell);
 
     // faceplate
-    var faceTex = faceplateTexture(opts.logo, opts.mirror);
-    var faceMat = new THREE.MeshPhysicalMaterial({ map: faceTex, metalness: 0.35, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.03 });
+    var fm = faceplateMaps(opts.logo, opts.mirror);
+    var faceMat = new THREE.MeshPhysicalMaterial({ map: fm.map, metalnessMap: fm.metalnessMap, roughnessMap: fm.roughnessMap, bumpMap: fm.bumpMap, bumpScale: 0.6,
+      metalness: 1, roughness: 1, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.2 });
     var face = new THREE.Mesh(faceplateGeometry(), faceMat);
     face.position.z = TOP - 0.035;
     groups.face = new THREE.Group(); groups.face.add(face);
-    // conector de 2 pinos na borda superior
-    var sock = new THREE.Mesh(roundedBox(0.18, 0.1, 0.12, 0.03), new THREE.MeshPhysicalMaterial({ color: 0xdfe4ea, transmission: 0.7, roughness: 0.15, thickness: 0.1 }));
-    sock.position.set(0.5, 0.74, 0.5);
-    groups.face.add(sock);
+
+    // soquete 2 pinos na borda de cima e o conector do cabo balanceado (alumínio grafite, pinos dourados)
+    var SOCK = new THREE.Vector3(0.3, 0.9, 0.44);
+    var sock = new THREE.Mesh(roundedBox(0.24, 0.12, 0.16, 0.035), new THREE.MeshPhysicalMaterial({ color: 0xdfe4ea, transmission: 0.7, roughness: 0.15, thickness: 0.1, transparent: true, opacity: 0.8 }));
+    sock.position.copy(SOCK); groups.face.add(sock);
+    var cDir = new THREE.Vector3(-0.12, 1, -0.32).normalize(), cQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), cDir);
+    var goldMat = new THREE.MeshStandardMaterial({ color: 0xe3bd6a, metalness: 1, roughness: 0.18 });
     for (var pi = 0; pi < 2; pi++) {
-      var pin = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.08, 10), new THREE.MeshStandardMaterial({ color: 0xd9b46a, metalness: 1, roughness: 0.2 }));
-      pin.position.set(0.47 + pi * 0.06, 0.78, 0.5); 
-      groups.face.add(pin);
+      var pin = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.1, 10), goldMat);
+      pin.position.copy(SOCK).add(new THREE.Vector3(pi ? 0.04 : -0.04, 0.0, 0)).addScaledVector(cDir, 0.1); pin.quaternion.copy(cQ); groups.face.add(pin);
+    }
+    var gun = new THREE.MeshPhysicalMaterial({ color: 0x4b4e53, metalness: 0.88, roughness: 0.34, clearcoat: 0.4, clearcoatRoughness: 0.25 });
+    var CON_LEN = 0.44, conStart = SOCK.clone().addScaledVector(cDir, 0.14);
+    var con = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, CON_LEN, 36), gun);
+    con.position.copy(conStart).addScaledVector(cDir, CON_LEN / 2); con.quaternion.copy(cQ); groups.face.add(con);
+    var marker = new THREE.Mesh(new THREE.TorusGeometry(0.084, 0.008, 8, 36), new THREE.MeshStandardMaterial({ color: opts.mirror ? 0x2d6bd6 : 0xd62d2d, roughness: 0.4 }));
+    marker.position.copy(conStart).addScaledVector(cDir, 0.05); marker.quaternion.copy(cQ).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2)); groups.face.add(marker);
+    var conEnd = conStart.clone().addScaledVector(cDir, CON_LEN);
+
+    // cabo balanceado: 8 núcleos prateados trançados, saindo do conector e fazendo o gancho por cima da orelha
+    if (opts.cable) {
+      var O = conEnd;
+      var path = [O, O.clone().addScaledVector(cDir, 0.22), new THREE.Vector3(O.x - 0.2, O.y + 0.62, O.z - 0.22), new THREE.Vector3(O.x - 0.62, O.y + 0.86, O.z - 0.42),
+                  new THREE.Vector3(O.x - 1.08, O.y + 0.68, O.z - 0.6), new THREE.Vector3(O.x - 1.34, O.y + 0.12, O.z - 0.72), new THREE.Vector3(O.x - 1.4, O.y - 0.7, O.z - 0.8),
+                  new THREE.Vector3(O.x - 1.36, O.y - 1.7, O.z - 0.82)];
+      var silver = new THREE.MeshPhysicalMaterial({ color: 0xb9bdc3, metalness: 0.9, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.2 });
+      var dark = new THREE.MeshPhysicalMaterial({ color: 0x3c3f44, metalness: 0.75, roughness: 0.36, clearcoat: 0.6, clearcoatRoughness: 0.2 });
+      var strands = opts.lite ? [silver, dark, silver, dark] : [silver, dark, silver, dark, silver, dark, silver, dark];
+      var braid = twisted(path, strands, opts.lite ? 0.026 : 0.019, 26);
+      groups.face.add(braid);
     }
     root.add(groups.face);
 
-    // crossover de 3 vias
+    // crossover de 3 vias: placa verde pequena logo abaixo do faceplate
     var pcb = new THREE.Group();
-    var board = new THREE.Mesh(roundedBox(0.62, 0.34, 0.025, 0.04), new THREE.MeshStandardMaterial({ color: COLORS.pcb, roughness: 0.55, metalness: 0.2 }));
+    var board = new THREE.Mesh(roundedBox(0.4, 0.24, 0.02, 0.03), new THREE.MeshStandardMaterial({ color: 0x1f6b40, roughness: 0.5, metalness: 0.15 }));
     pcb.add(board);
     var compMat = [
       new THREE.MeshStandardMaterial({ color: 0xc9a26a, roughness: 0.4 }),
       new THREE.MeshStandardMaterial({ color: 0x2b2b2e, roughness: 0.3, metalness: 0.4 }),
       new THREE.MeshStandardMaterial({ color: 0x8a6a3a, metalness: 0.8, roughness: 0.3 })
     ];
-    var comps = [[-0.2, 0.08, 0.07, 0.04, 0], [-0.08, 0.09, 0.05, 0.05, 1], [0.05, 0.07, 0.08, 0.035, 0], [0.18, 0.08, 0.05, 0.05, 2],
-                 [-0.18, -0.07, 0.06, 0.05, 1], [-0.04, -0.08, 0.09, 0.035, 0], [0.12, -0.07, 0.05, 0.05, 2], [0.22, -0.08, 0.05, 0.04, 1]];
-    comps.forEach(function (c) {
-      var m = new THREE.Mesh(new THREE.BoxGeometry(c[2], c[3], 0.035), compMat[c[4]]);
-      m.position.set(c[0], c[1], 0.03); pcb.add(m);
+    [[-0.12, 0.05, 0.06, 0.035, 0], [-0.03, 0.06, 0.04, 0.04, 1], [0.07, 0.05, 0.07, 0.03, 0], [0.14, -0.05, 0.04, 0.04, 2], [-0.1, -0.06, 0.05, 0.04, 1], [0.02, -0.06, 0.08, 0.03, 0]].forEach(function (c) {
+      var mm = new THREE.Mesh(new THREE.BoxGeometry(c[2], c[3], 0.03), compMat[c[4]]); mm.position.set(c[0], c[1], 0.025); pcb.add(mm);
     });
     var traceMat = new THREE.MeshStandardMaterial({ color: COLORS.copper, metalness: 1, roughness: 0.3, emissive: COLORS.copper, emissiveIntensity: 0.15 });
-    for (var tr = 0; tr < 3; tr++) {
-      var t1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.008, 0.004), traceMat);
-      t1.position.set(0, -0.12 + tr * 0.12, 0.015); pcb.add(t1);
-    }
-    pcb.position.set(-0.22, 0.12, 0.24);
-    pcb.rotation.set(0.05, -0.08, 0.06);
+    for (var tr = 0; tr < 3; tr++) { var t1 = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.006, 0.004), traceMat); t1.position.set(0, -0.08 + tr * 0.08, 0.012); pcb.add(t1); }
+    pcb.position.set(0.14, 0.46, 0.22); pcb.rotation.set(0.05, -0.1, 0.1);
     pcb.userData.glow = [traceMat];
     groups.pcb = pcb; root.add(pcb);
 
-    // 2 drivers de graves
+    var canalQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1, 0, 0), CANAL_DIR);
+    function place(d, pos, q) { d.position.set(pos[0], pos[1], pos[2]); d.quaternion.copy(q); d.updateMatrix(); return d; }
+    function tipOf(d) { return d.userData.spoutTip.clone().applyMatrix4(d.matrix); }
+
+    // Sonion 33AJ007i/9: graves
     groups.bass = new THREE.Group();
-    [[-0.42, -0.2, -0.2, 0.3], [-0.1, -0.3, -0.26, 0.15]].forEach(function (p) {
-      var d = baDriver(0.3, 0.21, 0.16, COLORS.bass);
-      d.position.set(p[0], p[1], p[2]); d.rotation.set(0.2, -0.35, p[3]);
-      groups.bass.add(d); parts.bass.push(d);
-    });
-    root.add(groups.bass);
+    var bd = place(sonion33AJ007(COLORS.bass), [-0.16, -0.3, -0.3], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.3, -0.35, 0.25))));
+    groups.bass.add(bd); parts.bass.push(bd); root.add(groups.bass);
 
-    // 2 drivers de médios
+    // Sonion 28UAP01: médios
     groups.mid = new THREE.Group();
-    [[-0.1, 0.22, -0.16, -0.2], [0.18, 0.1, -0.22, -0.35]].forEach(function (p) {
-      var d = baDriver(0.23, 0.16, 0.12, COLORS.mid);
-      d.position.set(p[0], p[1], p[2]); d.rotation.set(0.25, -0.5, p[3]);
-      groups.mid.add(d); parts.mid.push(d);
-    });
-    root.add(groups.mid);
+    var md = place(sonion28UAP01(COLORS.mid), [0.04, 0.36, -0.2], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.2, -0.3, 0.55))));
+    groups.mid.add(md); parts.mid.push(md); root.add(groups.mid);
 
-    // 4 eletrostáticos para altas e super altas, em dois pares junto da cânula
-    var stTex = statorTexture();
+    // Sonion EST65QB02: dois tweeters eletrostáticos (4 unidades) junto da cânula + transformador sob o faceplate
     groups.est = new THREE.Group();
-    var estBase = [[0.3, -0.1, -0.12], [0.3, -0.1, -0.21], [0.4, -0.3, -0.24], [0.4, -0.3, -0.33]];
-    estBase.forEach(function (p, i) {
-      var d = estDriver(stTex);
-      d.position.set(p[0], p[1], p[2]);
-      d.rotation.set(-0.55, 0.5, 0.4);
-      d.scale.setScalar(0.92);
-      d.userData.base = new THREE.Vector3(p[0], p[1], p[2]);
-      d.userData.i = i;
-      groups.est.add(d); parts.est.push(d);
+    var t1d = place(sonionESTTweeter(COLORS.est), [0.3, -0.16, -0.3], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.2, 0.15, 0.05))));
+    var t2d = place(sonionESTTweeter(COLORS.est), [0.4, 0.02, -0.4], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.3, 0.05, -0.05))));
+    var xf = place(sonionESTTransformer(), [-0.3, 0.06, 0.1], new THREE.Quaternion().setFromEuler(new THREE.Euler(0.08, 0.05, Math.PI / 2 - 0.12)));
+    [t1d, t2d].forEach(function (t) { groups.est.add(t); parts.est.push(t); });
+    groups.est.add(xf);
+    var xfOut = new THREE.Vector3(-0.55, 0, 0).applyMatrix4(xf.matrix);
+    [t1d, t2d].forEach(function (t, i) {
+      var top = new THREE.Vector3(-0.12, 0.14, 0).applyMatrix4(t.matrix);
+      groups.est.add(twisted([xfOut.clone().add(new THREE.Vector3(i * 0.05, 0, 0)), new THREE.Vector3(-0.15 + i * 0.05, -0.42, -0.02), new THREE.Vector3(0.1, -0.3 + i * 0.08, -0.2), top], [0xb3262a, 0x1f8a4c], 0.0055, 9));
     });
     root.add(groups.est);
 
-    // tubos de som até a cânula, um por via
+    // tubos de som de cada driver até a cânula
     var tubeMats = {};
     groups.tubes = new THREE.Group();
-    [['bass', [-0.25, -0.26, -0.28]], ['mid', [0.06, 0.14, -0.24]], ['est', [0.38, -0.22, -0.3]]].forEach(function (t, i) {
-      var mat = new THREE.MeshPhysicalMaterial({ color: 0xeef3f8, transmission: 0.85, roughness: 0.12, thickness: 0.05, transparent: true, opacity: 0.75, emissive: COLORS[t[0]], emissiveIntensity: 0.08 });
-      tubeMats[t[0]] = mat;
-      var off = (i - 1) * 0.05;
+    [['bass', bd, -0.04], ['mid', md, 0.0], ['est', t1d, 0.04], ['est', t2d, 0.02]].forEach(function (t) {
+      var mat = tubeMats[t[0]] || (tubeMats[t[0]] = new THREE.MeshPhysicalMaterial({ color: 0xeef3f8, transmission: 0.85, roughness: 0.12, thickness: 0.05, transparent: true, opacity: 0.75, emissive: COLORS[t[0]], emissiveIntensity: 0.08 }));
+      var a = tipOf(t[1]), off = t[2];
       var end = tip.clone().addScaledVector(nozzleDir, -0.03);
-      var mid = nozzleBase.clone();
-      groups.tubes.add(tube([t[1], [t[1][0] * 0.5 + mid.x * 0.5, t[1][1] * 0.5 + mid.y * 0.5 + off, (t[1][2] + mid.z) / 2], [mid.x + off * 0.8, mid.y + off * 0.4, mid.z], [end.x + off * 0.5, end.y + off * 0.3, end.z]], 0.024, mat));
+      var base = nozzleBase.clone();
+      groups.tubes.add(tube([[a.x, a.y, a.z], [a.x + CANAL_DIR.x * 0.08, a.y + CANAL_DIR.y * 0.08, a.z + CANAL_DIR.z * 0.08], [base.x + off, base.y + off * 0.6, base.z], [end.x + off * 0.6, end.y + off * 0.4, end.z]], 0.02, mat));
     });
     root.add(groups.tubes);
 
-    // fiação de cobre do conector para o crossover e do crossover para cada via
+    // fiação de cobre: soquete -> crossover -> cada via
     var wireMat = new THREE.MeshStandardMaterial({ color: COLORS.copper, metalness: 1, roughness: 0.35, transparent: true, opacity: 1 });
     groups.wires = new THREE.Group();
-    groups.wires.add(tube([[0.48, 0.7, 0.4], [0.3, 0.45, 0.32], [0.0, 0.22, 0.26]], 0.008, wireMat));
-    [[-0.36, -0.16, -0.12], [0.0, 0.2, -0.1], [0.32, -0.08, -0.08]].forEach(function (p) {
-      groups.wires.add(tube([[-0.1, 0.08, 0.24], [(p[0] - 0.1) / 2, (p[1] + 0.08) / 2, 0.2], p], 0.006, wireMat));
+    groups.wires.add(tube([[SOCK.x, SOCK.y - 0.06, SOCK.z - 0.04], [0.25, 0.7, 0.3], [0.16, 0.56, 0.22]], 0.007, wireMat));
+    [new THREE.Vector3(-0.55, 0, 0).applyMatrix4(xf.matrix).add(new THREE.Vector3(0, 1.1, 0)), new THREE.Vector3(-0.26, 0, 0).applyMatrix4(md.matrix), new THREE.Vector3(-0.39, 0, 0).applyMatrix4(bd.matrix)].forEach(function (p, i) {
+      var q = i === 0 ? new THREE.Vector3(-0.3, 0.6, 0.1) : p;
+      groups.wires.add(tube([[0.06, 0.42, 0.2], [(q.x + 0.06) / 2, (q.y + 0.42) / 2, Math.max(q.z, 0.05)], [q.x, q.y, q.z]], 0.0055, wireMat));
     });
     root.add(groups.wires);
-
-    // cabo transparente trançado com gancho de orelha
-    if (opts.cable) {
-      var cableMat = new THREE.MeshPhysicalMaterial({ color: 0xd8dde3, transmission: 0.6, roughness: 0.25, thickness: 0.2, transparent: true, opacity: 0.9 });
-      var cable = new THREE.Group();
-      for (var s = 0; s < 2; s++) {
-        var pts = [];
-        for (var k = 0; k <= 60; k++) {
-          var u = k / 60;
-          var ang = u * Math.PI * 1.15;
-          var cx = 0.5 - 0.95 * Math.sin(ang) * 0.9 - u * 0.25, cy = 0.82 + 1.1 * Math.sin(ang * 0.5) + u * 0.4, cz = 0.5 - u * 0.7;
-          var tw = u * Math.PI * 18 + s * Math.PI;
-          pts.push([cx + Math.cos(tw) * 0.018, cy, cz + Math.sin(tw) * 0.018]);
-        }
-        cable.add(tube(pts, 0.014, cableMat));
-      }
-      groups.face.add(cable);
-    }
 
     var all = ['shell', 'face', 'pcb', 'bass', 'mid', 'est', 'tubes', 'wires'];
     all.forEach(function (k) { groups[k].userData.home = groups[k].position.clone(); });
@@ -372,11 +449,11 @@
     // posições explodidas (deslocamento a partir da posição montada)
     var explodeOffset = {
       shell: new THREE.Vector3(0.35, -0.25, -1.0),
-      face: new THREE.Vector3(-1.5, 1.05, -0.35),
-      pcb: new THREE.Vector3(-0.5, 0.4, 0.4),
-      bass: new THREE.Vector3(-0.8, -0.65, 0.05),
-      mid: new THREE.Vector3(0.25, 0.85, 0.05),
-      est: new THREE.Vector3(0.95, -0.3, 0.3),
+      face: new THREE.Vector3(-1.3, 0.8, -0.25),
+      pcb: new THREE.Vector3(-0.2, 0.75, 0.55),
+      bass: new THREE.Vector3(-0.9, -0.7, 0.1),
+      mid: new THREE.Vector3(0.45, 0.95, 0.15),
+      est: new THREE.Vector3(1.0, -0.35, 0.4),
       tubes: new THREE.Vector3(0, 0, 0),
       wires: new THREE.Vector3(0, 0, 0)
     };
@@ -405,11 +482,6 @@
         all.forEach(function (name) {
           groups[name].position.copy(groups[name].userData.home).addScaledVector(explodeOffset[name], k);
         });
-        // separa as quatro unidades eletrostáticas para mostrar que são quatro
-        parts.est.forEach(function (d, i) {
-          var spread = [[-0.12, 0.2, 0.18], [0.12, 0.2, -0.02], [-0.12, -0.15, 0.2], [0.14, -0.18, 0]][i];
-          d.position.set(d.userData.base.x + spread[0] * k * 1.6, d.userData.base.y + spread[1] * k * 1.6, d.userData.base.z + spread[2] * k * 1.6);
-        });
         shellMat.opacity = lerp(opts.lite ? 0.24 : (opts.shellOpacity || 0.55), opts.lite ? 0.07 : 0.12, k);
         groups.tubes.visible = k < 0.35; groups.wires.visible = k < 0.35;
         groups.tubes.children.forEach(function (t) { t.material.opacity = 0.75 * (1 - k / 0.35); });
@@ -430,19 +502,20 @@
           var e = Math.max(state.energy[k] || 0, focusBoost);
           parts[k].forEach(function (d) {
             (d.userData.glow || []).forEach(function (m) { m.emissiveIntensity = 0.2 + e * 1.6; });
-            if (d.userData.stator) d.userData.stator.emissiveIntensity = 0.3 + e * 0.9;
           });
         });
         // película: ondulação senoidal discreta, mais forte com energia
         var amp = 0.004 + (state.energy.est || 0) * 0.012 + (state.focus === 'est' ? 0.006 : 0);
-        if (!(opts.lite && state.explode < 0.05 && !state.energy.est)) parts.est.forEach(function (d, i) {
-          var f = d.userData.film, pa = f.geometry.attributes.position;
-          for (var v = 0; v < pa.count; v++) {
-            var x = pa.getX(v), y = pa.getY(v);
-            var edge = Math.cos(x / 0.15 * Math.PI / 2) * Math.cos(y / 0.1 * Math.PI / 2);
-            pa.setZ(v, Math.sin(t * 9 + i) * amp * Math.max(edge, 0));
-          }
-          pa.needsUpdate = true;
+        if (!(opts.lite && state.explode < 0.05 && !state.energy.est)) parts.est.forEach(function (d) {
+          (d.userData.films || []).forEach(function (f, i) {
+            var pa = f.geometry.attributes.position;
+            for (var v = 0; v < pa.count; v++) {
+              var x = pa.getX(v), y = pa.getY(v);
+              var edge = Math.cos(x / 0.085 * Math.PI / 2) * Math.cos(y / 0.058 * Math.PI / 2);
+              pa.setZ(v, Math.sin(t * 9 + i) * amp * 0.6 * Math.max(edge, 0));
+            }
+            pa.needsUpdate = true;
+          });
         });
         (groups.pcb.userData.glow || []).forEach(function (m) { m.emissiveIntensity = 0.15 + (state.focus === 'pcb' ? 1.2 : 0); });
       },
