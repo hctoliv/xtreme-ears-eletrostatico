@@ -345,14 +345,158 @@
     });
   }
 
-  var INIT = { anatomia: initAnatomia, campo: initCampo, varredura: initVarredura, galeria: initGaleria };
+  /* ================= apresentação (estilo Apple) ================= */
+  // rola só quando visível; um único rAF por quadro
+  function onScrollVisible(el, fn) {
+    var vis = false, ticking = false;
+    function run() { ticking = false; if (vis) fn(); }
+    function req() { if (!ticking && vis) { ticking = true; requestAnimationFrame(run); } }
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { vis = e[0].isIntersecting; if (vis) req(); }, { rootMargin: '100px' }).observe(el);
+    else vis = true;
+    addEventListener('scroll', req, { passive: true });
+    addEventListener('resize', req);
+    req();
+  }
+
+  function initHero(root) {
+    var img = root.querySelector('.xe-ap-hero__img');
+    function go() { requestAnimationFrame(function () { root.classList.remove('is-loading'); }); }
+    if (!img || img.complete) go(); else { img.addEventListener('load', go); img.addEventListener('error', go); setTimeout(go, 1800); }
+    if (reduce) return;
+    onScrollVisible(root, function () {
+      var r = root.getBoundingClientRect();
+      root.style.setProperty('--p', clamp(-r.top / r.height, 0, 1).toFixed(3));
+    });
+  }
+
+  function initDestaques(root) {
+    var track = root.querySelector('.xe-ap-high__track');
+    var cards = [].slice.call(track.children);
+    var dotsBox = root.querySelector('.xe-ap-dots'), play = root.querySelector('.xe-ap-play');
+    var idx = 0, paused = reduce, visible = false, timer = 0;
+    var dots = cards.map(function (c, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Destaque ' + (i + 1));
+      b.addEventListener('click', function () { stop(); go(i); }); dotsBox.appendChild(b); return b;
+    });
+    function mark(i) {
+      idx = i;
+      cards.forEach(function (c, k) { c.classList.toggle('is-on', k === i); });
+      dots.forEach(function (d, k) { d.classList.toggle('is-on', k === i); d.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+    }
+    function go(i) {
+      var c = cards[i]; if (!c) return;
+      var pad = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+      track.scrollTo({ left: c.offsetLeft - pad, behavior: reduce ? 'auto' : 'smooth' });
+      mark(i);
+    }
+    // índice ativo pelo scroll do trilho
+    var st = 0;
+    track.addEventListener('scroll', function () {
+      cancelAnimationFrame(st);
+      st = requestAnimationFrame(function () {
+        var pad = parseFloat(getComputedStyle(track).paddingLeft) || 0, best = 0, bd = 1e9;
+        cards.forEach(function (c, k) { var d = Math.abs(c.offsetLeft - pad - track.scrollLeft); if (d < bd) { bd = d; best = k; } });
+        if (best !== idx) mark(best);
+      });
+    }, { passive: true });
+    function setPlay() {
+      play.setAttribute('aria-label', paused ? play.dataset.off : play.dataset.on);
+      play.querySelector('.i-pause').style.display = paused ? 'none' : '';
+      play.querySelector('.i-play').style.display = paused ? '' : 'none';
+    }
+    function schedule() { clearTimeout(timer); if (!paused && visible) timer = setTimeout(function () { go((idx + 1) % cards.length); schedule(); }, 5000); }
+    function stop() { paused = true; setPlay(); clearTimeout(timer); }
+    play.addEventListener('click', function () { paused = !paused; setPlay(); schedule(); });
+    ['pointerdown', 'wheel', 'keydown'].forEach(function (ev) { track.addEventListener(ev, function (e) { if (ev !== 'wheel' || Math.abs(e.deltaX) > Math.abs(e.deltaY)) stop(); }, { passive: true }); });
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; schedule(); }, { threshold: 0.35 }).observe(track);
+    mark(0); setPlay();
+  }
+
+  function initFrase(root) {
+    var p = root.querySelector('.xe-ap-say__p'), words = [];
+    function wrap(node, gold) {
+      [].slice.call(node.childNodes).forEach(function (n) {
+        if (n.nodeType === 3) {
+          var frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach(function (w) {
+            if (!w) return;
+            if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(w)); return; }
+            var sp = document.createElement('span'); sp.textContent = w; if (gold) sp.className = 'gold';
+            frag.appendChild(sp); words.push(sp);
+          });
+          node.replaceChild(frag, n);
+        } else if (n.nodeType === 1) { wrap(n, gold || n.hasAttribute('data-gold')); }
+      });
+    }
+    wrap(p, false);
+    p.querySelectorAll('em').forEach(function (e) { e.style.fontStyle = 'normal'; });
+    if (reduce) { words.forEach(function (w) { w.classList.add('on'); }); return; }
+    var lit = -1;
+    onScrollVisible(root, function () {
+      var r = root.getBoundingClientRect();
+      var t = clamp((innerHeight * 0.6 - r.top) / Math.max(r.height - innerHeight * 0.4, 1), 0, 1);
+      var n = Math.round(t * 1.15 * words.length);
+      if (n === lit) return; lit = n;
+      words.forEach(function (w, i) { w.classList.toggle('on', i < n); });
+    });
+  }
+
+  function initNumeros(root) {
+    var els = [].slice.call(root.querySelectorAll('[data-count]'));
+    function count(el) {
+      var to = +el.dataset.count, node = el.firstChild, t0 = performance.now();
+      if (reduce || !node || node.nodeType !== 3) return;
+      (function step(now) {
+        var k = Math.min((now - t0) / 1200, 1), e = 1 - Math.pow(1 - k, 3);
+        node.textContent = String(Math.round(to * e));
+        if (k < 1) requestAnimationFrame(step);
+      })(t0);
+    }
+    if (!('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (en) { en.forEach(function (e) { if (e.isIntersecting) { count(e.target); io.unobserve(e.target); } }); }, { threshold: 0.6 });
+    els.forEach(function (el) { io.observe(el); });
+  }
+
+  function initDesign(root) {
+    var tabs = [].slice.call(root.querySelectorAll('[role="tab"]'));
+    var imgs = [].slice.call(root.querySelectorAll('.xe-ap-design__view img'));
+    var cap = root.querySelector('.xe-ap-design__cap');
+    function sel(i, focus) {
+      var k = tabs[i].dataset.k;
+      tabs.forEach(function (t, j) { t.setAttribute('aria-selected', j === i ? 'true' : 'false'); t.tabIndex = j === i ? 0 : -1; });
+      imgs.forEach(function (im) { im.classList.toggle('on', im.dataset.k === k); });
+      cap.innerHTML = tabs[i].dataset.cap;
+      if (focus) tabs[i].focus();
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { sel(i); });
+      t.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); sel((i + 1) % tabs.length, true); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); sel((i - 1 + tabs.length) % tabs.length, true); }
+      });
+    });
+    sel(0);
+  }
+
+  // revelação ao rolar (títulos e blocos com .xe-ap-reveal)
+  function initReveal(scope) {
+    var els = [].slice.call((scope || document).querySelectorAll('.xe-ap-reveal:not(.is-in)'));
+    if (reduce || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('is-in'); }); return; }
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    els.forEach(function (e, i) { e.style.transitionDelay = (i % 5) * 0.08 + 's'; io.observe(e); });
+  }
+
+  var INIT = { anatomia: initAnatomia, campo: initCampo, varredura: initVarredura, galeria: initGaleria,
+    hero: initHero, destaques: initDestaques, frase: initFrase, numeros: initNumeros, design: initDesign };
   function boot(scope) {
     [].slice.call((scope || document).querySelectorAll('[data-xe]')).forEach(function (el) {
       if (el.__xe) return; el.__xe = true;
       var fn = INIT[el.dataset.xe]; if (fn) fn(el);
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); }); else boot();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); initReveal(); }); else { boot(); initReveal(); }
   // editor de temas do Shopify recarrega seções isoladas
-  document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
+  document.addEventListener('shopify:section:load', function (e) { boot(e.target); initReveal(e.target); });
 })();

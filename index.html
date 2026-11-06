@@ -39,7 +39,10 @@ body { margin: 0; background: #fff; }
 .grid-product__image-wrap img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; display: block; }
 @media (max-width: 768px) { .product-single__meta { padding-top: 22px; } }
 </style>
-<link rel="stylesheet" href="assets/xe-est.css?v=5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="assets/xe-est.css?v=9">
 </head>
 <body class="template-product">
 
@@ -102,6 +105,64 @@ body { margin: 0; background: #fff; }
 
 <main class="main-content" id="MainContent">
 
+<!-- ============ APRESENTAÇÃO (estilo página de produto da Apple) ============ -->
+<!-- seção xe-est-nav: barra fixa do produto -->
+<nav class="xe-est xe-ap xe-ap-nav" aria-label="Fone In Ear Eletrostático">
+  <div class="xe-ap-wrap xe-ap-nav__in">
+    <span class="xe-ap-nav__title">Eletrostático</span>
+    <div class="xe-ap-nav__links">
+      <a href="#xe-destaques">Destaques</a>
+      <a href="#xe-design">Design</a>
+      <a href="#xe-ficha">Ficha técnica</a>
+      <a class="xe-ap-btn xe-ap-btn--sm" href="#produto">Personalizar</a>
+    </div>
+  </div>
+</nav>
+
+<!-- seção xe-est-hero -->
+<section class="xe-est xe-ap xe-ap-hero is-loading" data-xe="hero" aria-label="Fone In Ear Eletrostático">
+  <div class="xe-ap-hero__stage" aria-hidden="true">
+    <span class="xe-ap-hero__word">EST</span>
+    <img class="xe-ap-hero__img" src="fotos/dk-hero-alpha-sm.webp" srcset="fotos/dk-hero-alpha-sm.webp 1200w, fotos/dk-hero-alpha.webp 2400w" sizes="(max-width: 640px) 175vw, 128vw" width="2400" height="1350" alt="" fetchpriority="high" decoding="async">
+  </div>
+  <div class="xe-ap-wrap xe-ap-hero__foot">
+    <div>
+      <p class="xe-ap-hero__name">Fone In Ear Eletrostático</p>
+      <h2 class="xe-ap-hero__title">Ouça o ar.</h2>
+    </div>
+    <div class="xe-ap-hero__buy">
+      <p>A partir de R$ 0.000,00<br>ou 12x de R$ 000,00</p>
+      <a class="xe-ap-btn" href="#produto">Personalizar</a>
+    </div>
+  </div>
+</section>
+
+<!-- seção xe-est-destaques -->
+<section class="xe-est xe-ap xe-ap-high" id="xe-destaques" data-xe="destaques" aria-label="Destaques">
+  <div class="xe-ap-wrap"><h2 class="xe-ap-h2 xe-ap-reveal">Comece pelos destaques.</h2></div>
+  <ul class="xe-ap-high__track" tabindex="0" aria-label="Destaques do Eletrostático">
+    <li class="xe-ap-card"><img src="fotos/dk-explode-sm.webp" alt="Drivers do Eletrostático separados: tweeters eletrostáticos, transformador, médios e graves" loading="lazy" decoding="async" style="object-position:62% 50%"><figcaption><b>Quatro eletrostáticos Sonion EST65QB02.</b> Agudos rápidos e abertos, com ar de sobra.</figcaption></li>
+    <li class="xe-ap-card"><img src="fotos/dk-face-sm.webp" alt="Faceplate preto com lascas de folha de ouro e o X da Xtreme Ears" loading="lazy" decoding="async"><figcaption><b>Faceplate em folha de ouro.</b> Lascas de ouro sob verniz cristal e o X da marca em metal.</figcaption></li>
+    <li class="xe-ap-card xe-ap-card--num"><figcaption><b>Do grave que se sente ao super agudo.</b> Resposta de frequência ampla para monitorar a banda inteira.</figcaption><span class="xe-ap-card__big">10 Hz<small>a 24 kHz</small></span></li>
+    <li class="xe-ap-card"><img src="fotos/dk-perfil-sm.webp" alt="Eletrostático de perfil, com a cânula e os drivers aparentes" loading="lazy" decoding="async" style="object-position:45% 50%"><figcaption><b>Moldado no seu ouvido.</b> Encaixe sob medida que isola o palco e não sai do lugar.</figcaption></li>
+    <li class="xe-ap-card"><img src="fotos/dk-par-sm.webp" alt="Par do Eletrostático com cabo balanceado trançado" loading="lazy" decoding="async" style="object-position:82% 30%"><figcaption><b>Cabo balanceado de 8 núcleos.</b> Prata trançada com conector 2 pinos.</figcaption></li>
+    <li class="xe-ap-card xe-ap-card--num"><figcaption><b>Oito drivers, três vias.</b> Graves, médios e eletrostáticos, cada grupo só na faixa em que é melhor.</figcaption><span class="xe-ap-card__big">8<small>drivers Sonion</small></span></li>
+  </ul>
+  <div class="xe-ap-high__ctrl">
+    <div class="xe-ap-dots" role="group" aria-label="Escolher destaque"></div>
+    <button type="button" class="xe-ap-play" aria-label="Pausar destaques" data-on="Pausar destaques" data-off="Reproduzir destaques">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path class="i-pause" fill="currentColor" d="M4 2h3v14H4zM11 2h3v14h-3z"/><path class="i-play" fill="currentColor" d="M4 2l12 7-12 7z" style="display:none"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- seção xe-est-frase -->
+<section class="xe-est xe-ap xe-ap-say" data-xe="frase" aria-label="Como funciona o eletrostático">
+  <div class="xe-ap-say__in"><div class="xe-ap-wrap">
+    <p class="xe-ap-say__p">Uma película mais fina que um fio de cabelo, suspensa entre duas placas. O sinal vira campo elétrico, e o campo move a película inteira de uma vez. <em data-gold>Sem bobina e sem ímã no caminho.</em></p>
+  </div></div>
+</section>
+
 <!-- ============ 1. APRESENTAÇÃO / ANATOMIA (seção xe-est-anatomia, primeira do template) ============ -->
 <section class="xe-est xe-est--dark xe-ana" data-xe="anatomia" data-logo="assets/logo-branco.png" aria-label="Anatomia do Fone In Ear Eletrostático">
   <div class="xe-ana__stage">
@@ -115,9 +176,9 @@ body { margin: 0; background: #fff; }
     </div>
     <div class="xe-ana__copy">
       <div class="xe-ana__step is-on">
-        <span class="xe-est__eyebrow">Novo · Linha eletrostática</span>
-        <h2>Eletrostático</h2>
-        <p>Oito drivers, quatro deles movidos a campo elétrico. Role para abrir o fone e ver o que tem dentro do corpo moldado.</p>
+        <span class="xe-est__eyebrow">Por dentro</span>
+        <h2>Abra o fone.</h2>
+        <p>Oito drivers, quatro deles movidos a campo elétrico. Role para ver o que tem dentro do corpo moldado.</p>
         <a class="xe-ana__skip" href="#produto">Ver preço e personalizar</a>
       </div>
       <div class="xe-ana__step">
@@ -156,6 +217,43 @@ body { margin: 0; background: #fff; }
       <button type="button"><span>Moldado</span><i></i></button>
     </nav>
     <span class="xe-ana__hint">Role para abrir</span>
+  </div>
+</section>
+
+
+<!-- seção xe-est-numeros -->
+<section class="xe-est xe-ap xe-ap-nums" data-xe="numeros" aria-label="Números">
+  <div class="xe-ap-wrap">
+    <h2 class="xe-ap-h2 xe-ap-reveal">Números que você ouve.</h2>
+    <ul class="xe-ap-nums__grid">
+      <li class="xe-ap-reveal"><span class="xe-ap-nums__n" data-count="8">8</span><span class="xe-ap-nums__l"><b>drivers</b> em três vias, um de cada modelo Sonion.</span></li>
+      <li class="xe-ap-reveal"><span class="xe-ap-nums__n" data-count="4">4</span><span class="xe-ap-nums__l"><b>eletrostáticos</b> só para as altas e super altas.</span></li>
+      <li class="xe-ap-reveal"><span class="xe-ap-nums__n" data-count="115">115<small> dB</small></span><span class="xe-ap-nums__l"><b>de sensibilidade</b>, volume de sobra com pouca potência.</span></li>
+      <li class="xe-ap-reveal"><span class="xe-ap-nums__n" data-count="19">19<small> Ω</small></span><span class="xe-ap-nums__l"><b>de impedância</b>, pronto para sistema sem fio e mesa.</span></li>
+      <li class="xe-ap-reveal"><span class="xe-ap-nums__n">10<small> Hz</small></span><span class="xe-ap-nums__l"><b>até 24 kHz</b> de resposta de frequência.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- seção xe-est-design -->
+<section class="xe-est xe-ap xe-ap-design" id="xe-design" data-xe="design" aria-label="Design">
+  <div class="xe-ap-wrap">
+    <h2 class="xe-ap-h2 xe-ap-reveal">Design. Sob medida para o seu ouvido. Feito para o palco.</h2>
+    <div class="xe-ap-design__view xe-ap-reveal">
+      <img class="on" data-k="par" src="fotos/dk-par-sm.webp" srcset="fotos/dk-par-sm.webp 800w, fotos/dk-par.webp 1600w" sizes="(max-width: 1180px) 100vw, 1180px" alt="Par do Eletrostático de frente" loading="lazy" decoding="async">
+      <img data-k="face" src="fotos/dk-face-sm.webp" srcset="fotos/dk-face-sm.webp 800w, fotos/dk-face.webp 1600w" sizes="(max-width: 1180px) 100vw, 1180px" alt="Faceplate do Eletrostático em detalhe" loading="lazy" decoding="async">
+      <img data-k="perfil" src="fotos/dk-perfil-sm.webp" srcset="fotos/dk-perfil-sm.webp 800w, fotos/dk-perfil.webp 1600w" sizes="(max-width: 1180px) 100vw, 1180px" alt="Eletrostático de perfil" loading="lazy" decoding="async">
+      <img data-k="dentro" src="fotos/dk-explode-sm.webp" srcset="fotos/dk-explode-sm.webp 800w, fotos/dk-explode.webp 1600w" sizes="(max-width: 1180px) 100vw, 1180px" alt="Vista explodida do Eletrostático" loading="lazy" decoding="async">
+    </div>
+    <div class="xe-ap-design__bar">
+      <div class="xe-ap-design__tabs" role="tablist" aria-label="Ângulos do fone">
+        <button type="button" role="tab" aria-selected="true" data-k="par" data-cap="&lt;b&gt;Um par, dois ouvidos.&lt;/b&gt; Cada lado é feito a partir do molde do seu ouvido.">Par</button>
+        <button type="button" role="tab" aria-selected="false" data-k="face" data-cap="&lt;b&gt;Faceplate em folha de ouro.&lt;/b&gt; Personalize cores, materiais e o seu logo.">Faceplate</button>
+        <button type="button" role="tab" aria-selected="false" data-k="perfil" data-cap="&lt;b&gt;Corpo cheio, cânula longa.&lt;/b&gt; Feito a partir do molde do seu ouvido.">Perfil</button>
+        <button type="button" role="tab" aria-selected="false" data-k="dentro" data-cap="&lt;b&gt;Três componentes Sonion.&lt;/b&gt; EST65QB02, 28UAP01 e 33AJ007i/9, com transformador para os eletrostáticos.">Por dentro</button>
+      </div>
+      <p class="xe-ap-design__cap" aria-live="polite"><b>Um par, dois ouvidos.</b> Cada lado é feito a partir do molde do seu ouvido.</p>
+    </div>
   </div>
 </section>
 
@@ -304,7 +402,7 @@ body { margin: 0; background: #fff; }
 </section>
 
 <!-- ============ 5. FICHA TÉCNICA (seção xe-est-ficha) ============ -->
-<section class="xe-est xe-est--light xe-ficha">
+<section class="xe-est xe-est--light xe-ficha" id="xe-ficha">
   <div class="xe-est__wrap xe-ficha__grid">
     <div>
       <span class="xe-est__eyebrow">Ficha técnica</span>
@@ -402,7 +500,7 @@ body { margin: 0; background: #fff; }
 </footer>
 
 <script defer src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script defer src="assets/xe-est-model.js?v=5"></script>
-<script defer src="assets/xe-est.js?v=5"></script>
+<script defer src="assets/xe-est-model.js?v=6"></script>
+<script defer src="assets/xe-est.js?v=6"></script>
 </body>
 </html>

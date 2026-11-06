@@ -16,19 +16,21 @@
 <script>
 (function () {
   var q = new URLSearchParams(location.search);
-  var view = +(q.get('v') || 0), dark = q.get('bg') === 'dark';
+  var view = +(q.get('v') || 0), none = q.get('bg') === 'none', dark = q.get('bg') === 'dark' || none;
   var W = innerWidth, H = innerHeight;
-  var renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  var renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: none, premultipliedAlpha: false });
+  if (none) renderer.setClearColor(0x000000, 0);
+  document.documentElement.style.background = document.body.style.background = none ? 'transparent' : dark ? '#000' : '#fff';
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(W, H);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = dark ? 1.5 : 1.15;
+  renderer.toneMappingExposure = dark ? 1.15 : 1.15;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.body.appendChild(renderer.domElement);
 
   var scene = new THREE.Scene();
-  scene.background = new THREE.Color(dark ? 0x0a0b0d : 0xffffff);
+  scene.background = none ? null : new THREE.Color(dark ? 0x000000 : 0xffffff);
   scene.environment = XEModel.studioEnvironment(renderer, !dark);
 
   var cam = new THREE.PerspectiveCamera(28, W / H, 0.1, 50);
@@ -67,6 +69,7 @@
         L.root.position.set(-1.12, 0.0, 0); L.root.rotation.set(-0.04, 0.62, -0.05);
         cam.fov = 24; cam.position.set(0, 1.1, 13.6); cam.updateProjectionMatrix();
         floor.visible = false; key.castShadow = false;
+        if (none) return;
         var fy = -1.1;
         var mir = new THREE.Group(); mir.scale.y = -1; mir.position.y = 2 * fy; scene.add(mir);
         [[R, false], [L, true]].forEach(function (pair) {
@@ -75,15 +78,15 @@
           m.root.position.copy(src.root.position); m.root.rotation.copy(src.root.rotation); mir.add(m.root);
         });
         // véu branco com degradê: reflexo forte no ponto de contato e sumindo para baixo
-        var veil = canvasVeil();
+        var veil = canvasVeil(dark);
         var plane = new THREE.Mesh(new THREE.PlaneGeometry(80, 60), new THREE.MeshBasicMaterial({ map: veil, transparent: true, depthWrite: false, toneMapped: false }));
         plane.rotation.x = -Math.PI / 2; plane.position.set(0, fy, 0); plane.renderOrder = 10; scene.add(plane);
       }
     ];
-    function canvasVeil() {
+    function canvasVeil(dk) {
       var c = document.createElement('canvas'); c.width = 8; c.height = 256;
       var x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 256);
-      g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.47, 'rgba(255,255,255,1)'); g.addColorStop(0.5, 'rgba(255,255,255,0.8)'); g.addColorStop(0.53, 'rgba(255,255,255,0.95)'); g.addColorStop(1, 'rgba(255,255,255,1)');
+      var cc = dk ? '0,0,0' : '255,255,255'; g.addColorStop(0, 'rgba(' + cc + ',1)'); g.addColorStop(0.47, 'rgba(' + cc + ',1)'); g.addColorStop(0.5, 'rgba(' + cc + ',' + (dk ? 0.72 : 0.8) + ')'); g.addColorStop(0.53, 'rgba(' + cc + ',' + (dk ? 0.9 : 0.95) + ')'); g.addColorStop(1, 'rgba(' + cc + ',1)');
       x.fillStyle = g; x.fillRect(0, 0, 8, 256);
       var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
     }
