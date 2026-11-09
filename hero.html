@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Foto do par</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:transparent}canvas{display:block;width:100vw;height:100vh}</style>
+</head>
+<body>
+<!-- Foto principal em estúdio: hero.html?bg=dark | matte (mesma cena em fundo branco, para recortar por diferença) | white (foto de catálogo) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="assets/xe-est-model.js?v=9"></script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), bg = q.get('bg') || 'dark', white = bg === 'white', matte = bg === 'matte';
+  var W = innerWidth, H = innerHeight;
+  var renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(W, H);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = white ? 1.05 : 1.0;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  document.body.style.background = white || matte ? '#fff' : '#000';
+  document.body.appendChild(renderer.domElement);
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(white || matte ? 0xffffff : 0x000000);
+
+  // estúdio para os reflexos: soft box grande em cima, duas tiras laterais simétricas, recortes atrás e um rebatedor na frente
+  (function env() {
+    var pm = new THREE.PMREMGenerator(renderer), e = new THREE.Scene();
+    e.add(new THREE.Mesh(new THREE.SphereGeometry(30, 32, 16), new THREE.MeshBasicMaterial({ color: white ? 0x9a9a9a : 0x050505, side: THREE.BackSide })));
+    function box(w, h, x, y, z, k, lookY) {
+      var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k * 0.985, k * 0.96), side: THREE.DoubleSide }));
+      m.position.set(x, y, z); m.lookAt(0, lookY || 0, 0); e.add(m);
+    }
+    box(10, 3, 0, 11, -3, 5);             // soft box de cima, recuado: só um brilho na borda de cima
+    box(1.4, 10, -9, 2, -1.5, 3.2); box(1.4, 10, 9, 2, -1.5, 3.2); // tiras laterais finas, atrás da linha dos fones
+    box(1.2, 8, -5, 2.5, -8, 3); box(1.2, 8, 5, 2.5, -8, 3);       // recorte atrás
+    box(5, 0.8, 0, 4.5, 12, 0.6);         // tira fina acima da câmera: um fio de luz no verniz
+    // painéis em degradê exatamente onde cada faceplate espelha: o reflexo vira um brilho suave atravessando o verniz
+    function grad(w, h, x, y, z, k) {
+      var c = document.createElement('canvas'); c.width = 8; c.height = 256; var g2 = c.getContext('2d');
+      var lg = g2.createLinearGradient(0, 0, 0, 256);
+      lg.addColorStop(0, 'rgba(255,255,255,1)'); lg.addColorStop(0.35, 'rgba(255,255,255,0.55)'); lg.addColorStop(0.7, 'rgba(255,255,255,0.08)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+      g2.fillStyle = lg; g2.fillRect(0, 0, 8, 256);
+      var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+      var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: t, color: new THREE.Color(k, k, k), transparent: true, side: THREE.DoubleSide }));
+      m.position.set(x, y, z); m.lookAt(0, 0.3, 0); e.add(m);
+    }
+    grad(10, 13, -10, 7.5, 5.5, 1.6); grad(10, 13, 10, 7.5, 5.5, 1.6);
+    scene.environment = pm.fromScene(e, 0.02).texture; pm.dispose();
+  })();
+  // luzes diretas simétricas
+  var keyL = new THREE.DirectionalLight(0xfff6ea, 1.0); keyL.position.set(0, 8, 6); scene.add(keyL);
+  [-1, 1].forEach(function (s) {
+    var side = new THREE.DirectionalLight(0xffffff, 1.1); side.position.set(7 * s, 3, 5); scene.add(side);
+    var rim = new THREE.DirectionalLight(0xfff0dc, 1.9); rim.position.set(5 * s, 4, -7); scene.add(rim);
+  });
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x101010, white ? 0.5 : 0.25));
+
+  var cam = new THREE.PerspectiveCamera(22, W / H, 0.1, 100);
+  var logo = new Image();
+  var logoP = new Promise(function (res) { logo.onload = logo.onerror = res; logo.src = 'assets/logo-branco.png'; });
+  Promise.all([logoP, XEModel.loadShell('R'), XEModel.loadShell('L')]).then(function (r) {
+    var SR = r[1], SL = r[2];
+    function pair(parent, cable) {
+      var R = XEModel.buildIEM({ logo: logo, cable: cable, pro: true, shell: SR });
+      var L = XEModel.buildIEM({ logo: logo, cable: cable, pro: true, mirror: true, shell: SL });
+      L.root.scale.x = -1;
+      // pose de catálogo: faceplates voltados para a câmera, girados para dentro, corpo e cânula aparecendo nos lados de fora
+      R.root.position.set(1.62, 0.2, 0); R.root.rotation.set(-0.2, -0.55, 0.1);
+      L.root.position.set(-1.62, 0.2, 0); L.root.rotation.set(-0.2, 0.55, -0.1);
+      [R, L].forEach(function (m) {
+        m.update(0.016); parent.add(m.root);
+        // luz interna: ilumina os drivers para eles aparecerem através do acrílico
+        var inner = new THREE.PointLight(0xfff1de, 2.6, 2.6, 2); inner.position.set(0.25, 0.05, -0.5); m.root.add(inner);
+      });
+      return [R, L];
+    }
+    pair(scene, true);
+    // reflexo no chão polido: cópia espelhada sob um véu que some com a distância
+    var fy = -1.62, mir = new THREE.Group(); mir.scale.y = -1; mir.position.y = 2 * fy; scene.add(mir);
+    pair(mir, false);
+    var c = document.createElement('canvas'); c.width = 4; c.height = 256;
+    var x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 256), cc = white || matte ? '255,255,255' : '0,0,0';
+    g.addColorStop(0, 'rgba(' + cc + ',1)'); g.addColorStop(0.48, 'rgba(' + cc + ',1)'); g.addColorStop(0.5, 'rgba(' + cc + ',0.7)'); g.addColorStop(0.535, 'rgba(' + cc + ',0.92)'); g.addColorStop(0.6, 'rgba(' + cc + ',1)'); g.addColorStop(1, 'rgba(' + cc + ',1)');
+    x.fillStyle = g; x.fillRect(0, 0, 4, 256);
+    var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    var veil = new THREE.Mesh(new THREE.PlaneGeometry(80, 60), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false }));
+    veil.rotation.x = -Math.PI / 2; veil.position.y = fy; veil.renderOrder = 20; scene.add(veil);
+    cam.position.set(0, 2.6, 17.5); cam.lookAt(0, 0.2, 0);
+    renderer.render(scene, cam);
+    document.title = 'pronto';
+  });
+})();
+</script>
+</body>
+</html>

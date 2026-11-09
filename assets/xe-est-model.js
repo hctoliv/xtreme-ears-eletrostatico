@@ -113,9 +113,9 @@
   function faceplateMaps(logo, mirror) {
     var W = 1536, H = 2360, r = rng(1234567);
     var flakes = [];
-    for (var i = 0; i < 5200; i++) {
-      var big = r() < 0.025;
-      var sz = big ? 8 + r() * 16 : 1.2 + Math.pow(r(), 2.6) * 7;
+    for (var i = 0; i < 3800; i++) {
+      var big = r() < 0.045;
+      var sz = big ? 9 + r() * 20 : 1.3 + Math.pow(r(), 2.5) * 7;
       var n = 4 + Math.floor(r() * 4), pts = [];
       for (var k = 0; k < n; k++) { var a = k / n * Math.PI * 2 + r() * 0.6, rr = sz * (0.45 + r() * 0.75); pts.push([Math.cos(a) * rr, Math.sin(a) * rr * (0.5 + r() * 0.6)]); }
       flakes.push({ x: r() * W, y: r() * H, rot: r() * 6.3, pts: pts, big: big, hue: 36 + r() * 12, lum: 42 + r() * 36, a: big ? 0.35 + r() * 0.35 : 0.55 + r() * 0.45, tilt: r() });
@@ -309,6 +309,14 @@
     });
     var SH = opts.shell || null;
     if (SH) { shellMat.side = THREE.FrontSide; shellMat.thickness = 0.3; }
+    // modo foto: acrílico cristal de verdade (refração e espessura), sem a transparência simulada
+    if (opts.pro) {
+      shellMat.transparent = false; shellMat.opacity = 1; shellMat.depthWrite = true;
+      shellMat.transmission = 1; shellMat.thickness = 0.45; shellMat.roughness = 0.025; shellMat.ior = 1.49;
+      shellMat.color.setHex(0xffffff); shellMat.attenuationColor = new THREE.Color(0xd6e4ec); shellMat.attenuationDistance = 2.2;
+      shellMat.clearcoat = 1; shellMat.clearcoatRoughness = 0.02; shellMat.specularIntensity = 1; shellMat.envMapIntensity = 1.4;
+    }
+    var proFace = !!opts.pro;
     var shell = new THREE.Mesh(SH ? SH.geo : shellGeometry(), shellMat);
     shell.renderOrder = 2;
     groups.shell = new THREE.Group(); groups.shell.add(shell);
@@ -342,6 +350,8 @@
     var fm = faceplateMaps(opts.logo, opts.mirror);
     var faceMat = new THREE.MeshPhysicalMaterial({ map: fm.map, metalnessMap: fm.metalnessMap, roughnessMap: fm.roughnessMap, bumpMap: fm.bumpMap, bumpScale: 0.6,
       metalness: 1, roughness: 1, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.2 });
+    // foto: laca mais espelhada (o fundo preto fica profundo e o brilho vem só do verniz)
+    if (proFace) { faceMat.roughness = 0.55; faceMat.clearcoatRoughness = 0.008; faceMat.envMapIntensity = 1.0; faceMat.bumpScale = 0.35; }
     var face = new THREE.Mesh(faceplateGeometry(SH && SH.outline), faceMat);
     face.position.z = TOP - 0.035;
     groups.face = new THREE.Group(); groups.face.add(face);
@@ -378,10 +388,13 @@
       var path = [O, O.clone().addScaledVector(cDir, 0.25), new THREE.Vector3(O.x + 0.48, O.y + 0.16, O.z - 0.12), new THREE.Vector3(O.x + 0.62, O.y + 0.6, O.z - 0.32),
                   new THREE.Vector3(O.x + 0.52, O.y + 1.2, O.z - 0.8), new THREE.Vector3(O.x + 0.28, O.y + 1.9, O.z - 1.6), new THREE.Vector3(O.x + 0.02, O.y + 2.8, O.z - 2.8),
                   new THREE.Vector3(O.x - 0.2, O.y + 3.8, O.z - 3.9)];
+      // foto de catálogo: o cabo sai de lado e sobe em curva para fora do quadro
+      if (opts.pro) path = [O, O.clone().addScaledVector(cDir, 0.3), new THREE.Vector3(O.x + 0.75, O.y + 0.18, O.z - 0.06), new THREE.Vector3(O.x + 1.35, O.y + 0.55, O.z - 0.16),
+                  new THREE.Vector3(O.x + 1.85, O.y + 1.25, O.z - 0.3), new THREE.Vector3(O.x + 2.15, O.y + 2.2, O.z - 0.45), new THREE.Vector3(O.x + 2.3, O.y + 3.4, O.z - 0.6)];
       var silver = new THREE.MeshPhysicalMaterial({ color: 0xb9bdc3, metalness: 0.9, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.2 });
       var dark = new THREE.MeshPhysicalMaterial({ color: 0x3c3f44, metalness: 0.75, roughness: 0.36, clearcoat: 0.6, clearcoatRoughness: 0.2 });
       var strands = opts.lite ? [silver, dark, silver, dark] : [silver, dark, silver, dark, silver, dark, silver, dark];
-      var braid = twisted(path, strands, opts.lite ? 0.026 : 0.019, 40);
+      var braid = twisted(path, strands, opts.lite ? 0.026 : opts.pro ? 0.034 : 0.019, opts.pro ? 70 : 40);
       groups.face.add(braid);
     }
     root.add(groups.face);
