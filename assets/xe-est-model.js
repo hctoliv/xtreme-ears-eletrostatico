@@ -95,9 +95,11 @@
 
   function faceplateGeometry(pts) {
     var ol = outlinePoints(160, pts), shape = new THREE.Shape();
+    if (pts) ol = ol.map(function (p) { var r = Math.hypot(p.x, p.y) || 1, k = Math.max(r - 0.008, 0.01) / r; return new THREE.Vector3(p.x * k, p.y * k, 0); });
     ol.forEach(function (p, k) { if (k === 0) shape.moveTo(p.x, p.y); else shape.lineTo(p.x, p.y); });
     shape.closePath();
-    var g = new THREE.ExtrudeGeometry(shape, { depth: 0.09, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.035, bevelSegments: 8, curveSegments: 120 });
+    var g = pts ? new THREE.ExtrudeGeometry(shape, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.045, bevelSize: 0.045, bevelSegments: 12, curveSegments: 160 })
+            : new THREE.ExtrudeGeometry(shape, { depth: 0.09, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.035, bevelSegments: 8, curveSegments: 120 });
     g.computeBoundingBox();
     var bb = g.boundingBox, uv = g.attributes.uv, ps = g.attributes.position;
     for (var i = 0; i < uv.count; i++) {
@@ -344,6 +346,15 @@
       groups.shell.add(bore);
     });
     }
+    if (SH && SH.plugs && opts.plugs === true) {
+      var pl = SH.plugs;
+      var a0 = new THREE.Vector3().fromArray(pl[0]), a1 = new THREE.Vector3().fromArray(pl[1]);
+      var slot = new THREE.Mesh(new THREE.CapsuleGeometry(0.13, a0.distanceTo(a1), 6, 16), shellMat);
+      slot.position.copy(a0).add(a1).multiplyScalar(0.5);
+      slot.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), a1.clone().sub(a0).normalize());
+      groups.shell.add(slot);
+      var vent = new THREE.Mesh(new THREE.SphereGeometry(0.11, 20, 14), shellMat); vent.position.fromArray(pl[2]); groups.shell.add(vent);
+    }
     root.add(groups.shell);
 
     // faceplate
@@ -352,8 +363,10 @@
       metalness: 1, roughness: 1, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.2 });
     // foto: laca mais espelhada (o fundo preto fica profundo e o brilho vem só do verniz)
     if (proFace) { faceMat.roughness = 0.55; faceMat.clearcoatRoughness = 0.008; faceMat.envMapIntensity = 1.0; faceMat.bumpScale = 0.35; }
-    var face = new THREE.Mesh(faceplateGeometry(SH && SH.outline), faceMat);
-    face.position.z = TOP - 0.035;
+    // laterais do faceplate em laca preta lisa (a textura de folha de ouro fica só no tampo)
+    var edgeMat = new THREE.MeshPhysicalMaterial({ color: 0x050505, metalness: 0.2, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.03 });
+    var face = new THREE.Mesh(faceplateGeometry(SH && SH.outline), SH ? [faceMat, edgeMat] : faceMat);
+    face.position.z = SH ? TOP + 0.005 : TOP - 0.035;
     groups.face = new THREE.Group(); groups.face.add(face);
 
     // soquete 2 pinos na borda de cima e o conector do cabo balanceado (alumínio grafite, pinos dourados)
@@ -493,14 +506,16 @@
     function setDim(group, dim) {
       group.traverse(function (o) {
         if (!o.isMesh) return;
-        var m = o.material;
+        (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (m) { dimOne(m); });
+      });
+      function dimOne(m) {
         if (m.userData.baseOpacity === undefined) { m.userData.baseOpacity = m.opacity; m.userData.baseTransparent = m.transparent; }
         var target = m.userData.baseOpacity * (1 - 0.72 * dim);
         var tr = m.userData.baseTransparent || target < 0.999;
         if (tr !== m.transparent) { m.transparent = tr; m.needsUpdate = true; }
         m.opacity = target;
         m.depthWrite = target > 0.6;
-      });
+      }
     }
 
     var api = {
@@ -606,8 +621,8 @@
   var metaP = null;
   function loadShell(side, base) {
     base = base || 'assets/shell/';
-    metaP = metaP || fetch(base + 'shell-meta.json').then(function (r) { return r.json(); });
-    return Promise.all([fetch(base + 'shell-' + side + '.bin').then(function (r) { if (!r.ok) throw new Error('shell'); return r.arrayBuffer(); }), metaP]).then(function (res) {
+    metaP = metaP || fetch(base + 'shell-meta.json?v=3').then(function (r) { return r.json(); });
+    return Promise.all([fetch(base + 'shell-' + side + '.bin?v=3').then(function (r) { if (!r.ok) throw new Error('shell'); return r.arrayBuffer(); }), metaP]).then(function (res) {
       var buf = res[0], meta = res[1][side];
       var h = new Uint32Array(buf, 0, 2), nv = h[0], nt = h[1];
       var pos = new Float32Array(buf, 8, nv * 3), idx = new Uint16Array(buf.slice(8 + nv * 12, 8 + nv * 12 + nt * 6));
@@ -616,7 +631,7 @@
       geo.setIndex(new THREE.BufferAttribute(idx, 1));
       geo.computeVertexNormals(); geo.computeBoundingBox();
       // ponta, entrada e eixo da cânula vêm do pré-processamento do molde
-      return { geo: geo, outline: meta.outline, tip: new THREE.Vector3().fromArray(meta.tip), dir: new THREE.Vector3().fromArray(meta.dir).normalize(), base: new THREE.Vector3().fromArray(meta.base) };
+      return { geo: geo, outline: meta.outline, tip: new THREE.Vector3().fromArray(meta.tip), dir: new THREE.Vector3().fromArray(meta.dir).normalize(), base: new THREE.Vector3().fromArray(meta.base), plugs: meta.plugs };
     });
   }
 
