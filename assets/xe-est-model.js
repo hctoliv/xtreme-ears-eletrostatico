@@ -15,12 +15,11 @@
   // lado da cânula (+x) mais reto, afinando numa ponta embaixo.
   var OUTLINE_PTS = [[0.0, 0.82], [-0.38, 0.72], [-0.6, 0.4], [-0.6, 0.0], [-0.44, -0.38], [-0.18, -0.68], [0.1, -0.9],
                      [0.26, -0.82], [0.38, -0.5], [0.48, -0.06], [0.47, 0.4], [0.28, 0.74]];
-  var outlineCache = null;
-  function outlinePoints(n) {
-    if (outlineCache && outlineCache.length === n) return outlineCache;
-    var curve = new THREE.CatmullRomCurve3(OUTLINE_PTS.map(function (p) { return new THREE.Vector3(p[0] * 1.2, p[1] * 1.2, 0); }), true, 'centripetal');
-    outlineCache = curve.getSpacedPoints(n).slice(0, n);
-    return outlineCache;
+  // pts: contorno em unidades da cena (o do molde real) ou, sem ele, o contorno desenhado escalado 1,2
+  function outlinePoints(n, pts) {
+    var src = pts || OUTLINE_PTS.map(function (p) { return [p[0] * 1.2, p[1] * 1.2]; });
+    var curve = new THREE.CatmullRomCurve3(src.map(function (p) { return new THREE.Vector3(p[0], p[1], 0); }), true, 'centripetal');
+    return curve.getSpacedPoints(n).slice(0, n);
   }
 
   function canvasTex(w, h, draw) {
@@ -94,8 +93,8 @@
   }
   function canalEnd() { return BODY_END.clone().addScaledVector(CANAL_DIR, CANAL_LEN); }
 
-  function faceplateGeometry() {
-    var ol = outlinePoints(120), shape = new THREE.Shape();
+  function faceplateGeometry(pts) {
+    var ol = outlinePoints(160, pts), shape = new THREE.Shape();
     ol.forEach(function (p, k) { if (k === 0) shape.moveTo(p.x, p.y); else shape.lineTo(p.x, p.y); });
     shape.closePath();
     var g = new THREE.ExtrudeGeometry(shape, { depth: 0.09, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.035, bevelSegments: 8, curveSegments: 120 });
@@ -308,15 +307,19 @@
       ior: 1.5, clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, opacity: opts.shellOpacity || 0.55,
       side: THREE.DoubleSide, depthWrite: false
     });
-    var shell = new THREE.Mesh(shellGeometry(), shellMat);
+    var SH = opts.shell || null;
+    if (SH) { shellMat.side = THREE.FrontSide; shellMat.thickness = 0.3; }
+    var shell = new THREE.Mesh(SH ? SH.geo : shellGeometry(), shellMat);
     shell.renderOrder = 2;
     groups.shell = new THREE.Group(); groups.shell.add(shell);
+    var CD = SH ? SH.dir.clone() : CANAL_DIR.clone();
 
     // ponta da cânula: tampa, três furos de saída e o anel vermelho do lado direito
-    var nozzleDir = CANAL_DIR.clone();
+    var nozzleDir = CD.clone();
     var endFrame = { r: TIP_R };
-    var tip = canalEnd();
-    var nozzleBase = BODY_END.clone();
+    var tip = SH ? SH.tip.clone() : canalEnd();
+    var nozzleBase = SH ? SH.base.clone() : BODY_END.clone();
+    if (!SH) {
     var tipCap = new THREE.Mesh(new THREE.CircleGeometry(endFrame.r * 1.0, 48), shellMat);
     tipCap.position.copy(tip); tipCap.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), nozzleDir);
     groups.shell.add(tipCap);
@@ -332,18 +335,26 @@
       bore.quaternion.copy(tipCap.quaternion);
       groups.shell.add(bore);
     });
+    }
     root.add(groups.shell);
 
     // faceplate
     var fm = faceplateMaps(opts.logo, opts.mirror);
     var faceMat = new THREE.MeshPhysicalMaterial({ map: fm.map, metalnessMap: fm.metalnessMap, roughnessMap: fm.roughnessMap, bumpMap: fm.bumpMap, bumpScale: 0.6,
       metalness: 1, roughness: 1, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.2 });
-    var face = new THREE.Mesh(faceplateGeometry(), faceMat);
+    var face = new THREE.Mesh(faceplateGeometry(SH && SH.outline), faceMat);
     face.position.z = TOP - 0.035;
     groups.face = new THREE.Group(); groups.face.add(face);
 
     // soquete 2 pinos na borda de cima e o conector do cabo balanceado (alumínio grafite, pinos dourados)
     var SOCK = new THREE.Vector3(0.6, 0.5, 0.3);
+    if (SH) {
+      // conector na lateral de fora, no alto: ponto do contorno mais para cima e para fora, um pouco abaixo da borda
+      var best = null, bs = -1e9;
+      SH.outline.forEach(function (p) { var sc = p[0] * 0.7 + p[1] * 0.72; if (sc > bs) { bs = sc; best = p; } });
+      var bl = Math.hypot(best[0], best[1]);
+      SOCK.set(best[0] * (1 - 0.06 / bl), best[1] * (1 - 0.06 / bl), TOP - 0.16);
+    }
     var sock = new THREE.Mesh(roundedBox(0.12, 0.24, 0.16, 0.035), new THREE.MeshPhysicalMaterial({ color: 0xdfe4ea, transmission: 0.7, roughness: 0.15, thickness: 0.1, transparent: true, opacity: 0.8 }));
     sock.position.copy(SOCK); groups.face.add(sock);
     var cDir = new THREE.Vector3(1, 0.3, -0.18).normalize(), cQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), cDir);
@@ -389,29 +400,34 @@
     });
     var traceMat = new THREE.MeshStandardMaterial({ color: COLORS.copper, metalness: 1, roughness: 0.3, emissive: COLORS.copper, emissiveIntensity: 0.15 });
     for (var tr = 0; tr < 3; tr++) { var t1 = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.006, 0.004), traceMat); t1.position.set(0, -0.08 + tr * 0.08, 0.012); pcb.add(t1); }
-    pcb.position.set(0.14, 0.46, 0.22); pcb.rotation.set(0.05, -0.1, 0.1);
+    // posições dentro do casco: as do molde real (SH) ou as do casco desenhado
+    var base0 = nozzleBase.clone();
+    function nearBase(back, dx, dy, dz) { return base0.clone().addScaledVector(CD, -back).add(new THREE.Vector3(dx, dy, dz)).toArray(); }
+    var POS = SH ? { pcb: [0.3, 0.72, 0.24], bass: [-0.32, -0.55, -0.55], mid: [0.25, 0.5, -0.45], t1: nearBase(0.42, -0.14, -0.06, 0), t2: nearBase(0.38, 0.12, 0.14, 0), xf: [-0.48, 0.05, 0.1] }
+                 : { pcb: [0.14, 0.46, 0.22], bass: [-0.16, -0.3, -0.3], mid: [0.04, 0.36, -0.2], t1: [0.3, -0.16, -0.3], t2: [0.4, 0.02, -0.4], xf: [-0.3, 0.06, 0.1] };
+    pcb.position.fromArray(POS.pcb); pcb.rotation.set(0.05, -0.1, 0.1);
     pcb.userData.glow = [traceMat];
     groups.pcb = pcb; root.add(pcb);
 
-    var canalQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1, 0, 0), CANAL_DIR);
+    var canalQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1, 0, 0), CD);
     function place(d, pos, q) { d.position.set(pos[0], pos[1], pos[2]); d.quaternion.copy(q); d.updateMatrix(); return d; }
     function tipOf(d) { return d.userData.spoutTip.clone().applyMatrix4(d.matrix); }
 
     // graves
     groups.bass = new THREE.Group();
-    var bd = place(bassDriver(COLORS.bass), [-0.16, -0.3, -0.3], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.3, -0.35, 0.25))));
+    var bd = place(bassDriver(COLORS.bass), POS.bass, canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.3, -0.35, 0.25))));
     groups.bass.add(bd); parts.bass.push(bd); root.add(groups.bass);
 
     // médios
     groups.mid = new THREE.Group();
-    var md = place(midDriver(COLORS.mid), [0.04, 0.36, -0.2], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.2, -0.3, 0.55))));
+    var md = place(midDriver(COLORS.mid), POS.mid, canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.2, -0.3, 0.55))));
     groups.mid.add(md); parts.mid.push(md); root.add(groups.mid);
 
     // eletrostáticos: dois tweeters (4 unidades) junto da cânula + transformador sob o faceplate
     groups.est = new THREE.Group();
-    var t1d = place(estTweeter(COLORS.est), [0.3, -0.16, -0.3], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.2, 0.15, 0.05))));
-    var t2d = place(estTweeter(COLORS.est), [0.4, 0.02, -0.4], canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.3, 0.05, -0.05))));
-    var xf = place(estTransformer(), [-0.3, 0.06, 0.1], new THREE.Quaternion().setFromEuler(new THREE.Euler(0.08, 0.05, Math.PI / 2 - 0.12)));
+    var t1d = place(estTweeter(COLORS.est), POS.t1, canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.2, 0.15, 0.05))));
+    var t2d = place(estTweeter(COLORS.est), POS.t2, canalQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.3, 0.05, -0.05))));
+    var xf = place(estTransformer(), POS.xf, new THREE.Quaternion().setFromEuler(new THREE.Euler(0.08, 0.05, Math.PI / 2 - 0.12)));
     [t1d, t2d].forEach(function (t) { groups.est.add(t); parts.est.push(t); });
     groups.est.add(xf);
     var xfOut = new THREE.Vector3(-0.55, 0, 0).applyMatrix4(xf.matrix);
@@ -429,7 +445,7 @@
       var a = tipOf(t[1]), off = t[2];
       var end = tip.clone().addScaledVector(nozzleDir, -0.03);
       var base = nozzleBase.clone();
-      groups.tubes.add(tube([[a.x, a.y, a.z], [a.x + CANAL_DIR.x * 0.08, a.y + CANAL_DIR.y * 0.08, a.z + CANAL_DIR.z * 0.08], [base.x + off, base.y + off * 0.6, base.z], [end.x + off * 0.6, end.y + off * 0.4, end.z]], 0.02, mat));
+      groups.tubes.add(tube([[a.x, a.y, a.z], [a.x + CD.x * 0.08, a.y + CD.y * 0.08, a.z + CD.z * 0.08], [base.x + off, base.y + off * 0.6, base.z], [end.x + off * 0.6, end.y + off * 0.4, end.z]], 0.02, mat));
     });
     root.add(groups.tubes);
 
@@ -572,5 +588,23 @@
     return rt.texture;
   }
 
-  global.XEModel = { buildIEM: buildIEM, studioEnvironment: studioEnvironment, ease: ease, COLORS: COLORS };
+  // carrega o casco moldado real (assets/shell/shell-R.bin / shell-L.bin + shell-meta.json)
+  var metaP = null;
+  function loadShell(side, base) {
+    base = base || 'assets/shell/';
+    metaP = metaP || fetch(base + 'shell-meta.json').then(function (r) { return r.json(); });
+    return Promise.all([fetch(base + 'shell-' + side + '.bin').then(function (r) { if (!r.ok) throw new Error('shell'); return r.arrayBuffer(); }), metaP]).then(function (res) {
+      var buf = res[0], meta = res[1][side];
+      var h = new Uint32Array(buf, 0, 2), nv = h[0], nt = h[1];
+      var pos = new Float32Array(buf, 8, nv * 3), idx = new Uint16Array(buf.slice(8 + nv * 12, 8 + nv * 12 + nt * 6));
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setIndex(new THREE.BufferAttribute(idx, 1));
+      geo.computeVertexNormals(); geo.computeBoundingBox();
+      // ponta, entrada e eixo da cânula vêm do pré-processamento do molde
+      return { geo: geo, outline: meta.outline, tip: new THREE.Vector3().fromArray(meta.tip), dir: new THREE.Vector3().fromArray(meta.dir).normalize(), base: new THREE.Vector3().fromArray(meta.base) };
+    });
+  }
+
+  global.XEModel = { loadShell: loadShell, buildIEM: buildIEM, studioEnvironment: studioEnvironment, ease: ease, COLORS: COLORS };
 })(window);

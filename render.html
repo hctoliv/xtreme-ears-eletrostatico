@@ -44,17 +44,19 @@
   floor.rotation.x = -Math.PI / 2; floor.position.y = -1.05; floor.receiveShadow = true; scene.add(floor);
 
   var logo = new Image();
-  logo.onload = build; logo.onerror = build; logo.src = 'assets/logo-branco.png';
+  var SHELLS = {};
+  var logoP = new Promise(function (res) { logo.onload = logo.onerror = res; logo.src = 'assets/logo-branco.png'; });
+  Promise.all([logoP, XEModel.loadShell('R'), XEModel.loadShell('L')]).then(function (r) { SHELLS.R = r[1]; SHELLS.L = r[2]; build(); }, function () { build(); });
 
   function build() {
-    var R = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.5 });
-    var L = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.5, mirror: true });
+    var R = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.5, shell: SHELLS.R });
+    var L = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.5, mirror: true, shell: SHELLS.L });
     L.root.scale.x = -1; // lado esquerdo espelhado
     [R, L].forEach(function (m) { m.root.traverse(function (o) { if (o.isMesh) { o.castShadow = true; } }); scene.add(m.root); });
 
     var views = [
       // 0: par de frente, faceplates à mostra
-      function () { R.root.position.set(1.3, 0, 0); R.root.rotation.set(-0.3, -0.5, 0.12); L.root.position.set(-1.3, 0, 0); L.root.rotation.set(-0.3, 0.5, -0.12); cam.position.set(0, 1.6, 9.5); },
+      function () { R.root.position.set(1.85, 0.3, 0); R.root.rotation.set(-0.3, -0.5, 0.12); L.root.position.set(-1.85, 0.3, 0); L.root.rotation.set(-0.3, 0.5, -0.12); cam.position.set(0, 2.4, 14.5); },
       // 1: um lado, de costas para mostrar o corpo, a hélix e a cânula
       function () { L.root.visible = false; R.root.position.set(0, 0.1, 0); R.root.rotation.set(0.25, -2.0, 0.15); cam.position.set(0, 0.5, 6.4); },
       // 4: perfil, como no ouvido
@@ -65,15 +67,15 @@
       function () { L.root.visible = false; R.setExplode(1); R.root.position.set(0, 0.1, 0); R.root.rotation.set(0.25, -0.7, 0.05); cam.position.set(0, 0.4, 6.6); floor.visible = false; },
       // 5: foto principal no padrão da loja: par de frente em fundo branco, cabos saindo para os lados e reflexo no chão
       function () {
-        R.root.position.set(1.12, 0.0, 0); R.root.rotation.set(-0.04, -0.62, 0.05);
-        L.root.position.set(-1.12, 0.0, 0); L.root.rotation.set(-0.04, 0.62, -0.05);
-        cam.fov = 24; cam.position.set(0, 1.1, 13.6); cam.updateProjectionMatrix();
+        R.root.position.set(1.8, 0.35, 0); R.root.rotation.set(-0.04, -0.62, 0.05);
+        L.root.position.set(-1.8, 0.35, 0); L.root.rotation.set(-0.04, 0.62, -0.05);
+        cam.fov = 24; cam.position.set(0, 1.6, 20.5); cam.updateProjectionMatrix();
         floor.visible = false; key.castShadow = false;
         if (none) return;
-        var fy = -1.1;
+        var fy = -1.55;
         var mir = new THREE.Group(); mir.scale.y = -1; mir.position.y = 2 * fy; scene.add(mir);
         [[R, false], [L, true]].forEach(function (pair) {
-          var src = pair[0], m = XEModel.buildIEM({ logo: logo, cable: false, shellOpacity: 0.5, mirror: pair[1] });
+          var src = pair[0], m = XEModel.buildIEM({ logo: logo, cable: false, shellOpacity: 0.5, mirror: pair[1], shell: pair[1] ? SHELLS.L : SHELLS.R });
           if (pair[1]) m.root.scale.x = -1;
           m.root.position.copy(src.root.position); m.root.rotation.copy(src.root.rotation); mir.add(m.root);
         });

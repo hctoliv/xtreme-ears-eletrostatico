@@ -42,8 +42,10 @@
     var logo = new Image();
     var model = null, pivot = new THREE.Group();
     scene.add(pivot);
-    logo.onload = logo.onerror = function () {
-      model = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.42, lite: true });
+    var shellP = XEModel.loadShell ? XEModel.loadShell('R', root.dataset.shell || 'assets/shell/').catch(function () { return null; }) : Promise.resolve(null);
+    var logoP = new Promise(function (res) { logo.onload = logo.onerror = res; });
+    Promise.all([logoP, shellP]).then(function (r) {
+      model = XEModel.buildIEM({ logo: logo, cable: true, shellOpacity: 0.42, lite: true, shell: r[1] });
       // centraliza o volume do fone no pivô
       var box = new THREE.Box3().setFromObject(model.groups.shell), c = box.getCenter(new THREE.Vector3());
       model.root.position.sub(c);
@@ -51,7 +53,7 @@
       // compila os shaders antes do primeiro quadro para não travar no início do scroll
       if (renderer.compile) renderer.compile(scene, cam);
       resize(); wake();
-    };
+    });
     logo.src = root.dataset.logo || 'assets/logo-branco.png';
 
     var state = { p: 0, step: -1, explode: 0, rot: ROT[0].slice(), mx: 0, my: 0 };
@@ -70,7 +72,7 @@
       cam.updateProjectionMatrix();
       // no desktop o fone fica à direita do texto; no celular, acima do texto
       pivot.position.set(mobile ? 0 : 1.25, mobile ? 1.15 : 0.3, 0);
-      pivot.scale.setScalar(mobile ? 0.78 : 0.92);
+      pivot.scale.setScalar(mobile ? 0.5 : 0.6);
     }
     var rz = 0;
     addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { resize(); wake(); }, 120); });
