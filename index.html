@@ -36,6 +36,9 @@ body { margin: 0; background: #fff; }
 .proto-details details[open] summary::after { content: "−"; }
 .proto-details .rte { padding-bottom: 16px; font-size: 15px; line-height: 1.6; }
 .proto-price-todo { display: inline-block; font-size: 12px; color: #8a6a2a; border: 1px dashed #c9a25a; padding: 2px 6px; margin-left: 8px; vertical-align: middle; letter-spacing: 0.05em; }
+/* o Custom Product Builder pinta o botão Personalizar de preto cheio na loja */
+.personalize-it--js { background: #111 !important; color: #fff !important; border-color: #111 !important; display: block; text-align: center; }
+.personalize-it--js:hover { background: #2b2b2b !important; }
 .grid-product__image-wrap img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; display: block; }
 @media (max-width: 768px) { .product-single__meta { padding-top: 22px; } }
 </style>
@@ -107,7 +110,7 @@ body { margin: 0; background: #fff; }
 <section class="xe-est xe-ap xe-ap-hero is-loading" data-xe="hero" aria-label="Fone In Ear Eletrostático">
   <div class="xe-ap-hero__stage" aria-hidden="true">
     <span class="xe-ap-hero__word">EST</span>
-    <img class="xe-ap-hero__img" src="fotos/dk-hero-foto2-sm.webp" srcset="fotos/dk-hero-foto2-sm.webp 1392w, fotos/dk-hero-foto2.webp 2784w" sizes="(max-width: 640px) 100vw, 120vh" width="2784" height="1586" alt="" fetchpriority="high" decoding="async">
+    <img class="xe-ap-hero__img" src="fotos/dk-hero-foto3-sm.webp" srcset="fotos/dk-hero-foto3-sm.webp 1694w, fotos/dk-hero-foto3.webp 3388w" sizes="(max-width: 640px) 100vw, 120vh" width="3388" height="1628" alt="" fetchpriority="high" decoding="async">
   </div>
   <div class="xe-ap-wrap xe-ap-hero__foot">
     <div>
@@ -231,81 +234,76 @@ body { margin: 0; background: #fff; }
         <div class="grid__item medium-up--one-half">
           <div class="product-single__meta">
             <div class="product-block product-block--header">
-              <div class="product-single__vendor"><a href="https://xtremeears.com.br/collections/vendors?q=Xtreme%20Ears">Xtreme Ears</a></div>
+              <div class="product-single__vendor"><a href="https://xtremeears.com.br/collections/vendors?q=Xtreme%20Ears" title="Xtreme Ears">Xtreme Ears</a></div>
               <h1 class="h2 product-single__title">Fone In Ear Eletrostático</h1>
             </div>
-
-            <!-- bloco "Liquid personalizado" → snippet xe-est-buybox -->
-            <div class="product-block">
-              <span class="xe-est xe-buy__badge"><i></i>Linha eletrostática</span>
-            </div>
-            <div class="product-block product-block--price">
-              <span class="visually-hidden">Preço normal</span>
-              <span class="product__price">R$ 0.000,00</span><span class="proto-price-todo">preço a definir</span>
-              <div class="xe-est">
-                <p class="xe-buy__installments">ou <strong>12x de R$ 000,00</strong> sem juros no cartão</p>
-              </div>
-              <div class="product__policies rte small--text-center">Frete grátis. Produção de ~4 semanas após o pré-molde.</div>
-            </div>
-            <div class="product-block xe-est">
-              <ul class="xe-buy__chips" aria-label="Destaques técnicos">
-                <li><b>8</b> drivers</li>
-                <li><b>4</b> eletrostáticos</li>
-                <li>Crossover <b>3 vias</b></li>
-                <li><b>19</b> Ω</li>
-                <li><b>115</b> dB</li>
-                <li><b>10 Hz</b> a <b>24 kHz</b></li>
-              </ul>
-            </div>
-            <div class="product-block product-block--sales-point">
-              <ul class="sales-points">
-                <li class="sales-point"><span class="icon-and-text"><span class="icon icon--inventory"></span><span>Feito sob medida no seu ouvido</span></span></li>
-                <li class="sales-point"><span class="icon-and-text"><span class="icon icon--inventory"></span><span>Produzido no Brasil com assistência técnica nacional</span></span></li>
-              </ul>
-            </div>
-            <div class="product-block">
-              <!-- no Shopify este botão é o do Custom Product Builder (PERSONALIZAR) -->
-              <a href="#personalizar" class="btn btn--full add-to-cart"><span>Personalizar</span></a>
-              <div class="xe-est">
-                <a class="xe-buy__wa" href="https://wa.me/5511950295494?text=Oi!%20Quero%20saber%20mais%20sobre%20o%20fone%20Eletrost%C3%A1tico" target="_blank" rel="noopener">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2s.2-1.1.1-1.2-.2-.2-.5-.3Z"/></svg>
-                  Tirar dúvidas no WhatsApp
-                </a>
-                <ol class="xe-buy__steps" aria-label="Como funciona a compra">
-                  <li><div><p class="xe-buy__steps-title">Personalize e finalize</p>Cores da cápsula, faceplate, logo e cabo.</div></li>
-                  <li><div><p class="xe-buy__steps-title">Faça o pré-molde</p>Com um(a) fonoaudiólogo(a) perto de você. A gente indica.</div></li>
-                  <li><div><p class="xe-buy__steps-title">Produção</p>Cerca de 4 semanas depois que o molde aprovado chega.</div></li>
-                  <li><div><p class="xe-buy__steps-title">No seu ouvido</p>Frete grátis e assistência técnica nacional.</div></li>
-                </ol>
-              </div>
-            </div>
-            <div class="product-block proto-details">
-              <details open>
-                <summary>Descrição</summary>
-                <div class="rte">
-                  <p><strong>A linha eletrostática da Xtreme Ears.</strong> Oito drivers em três vias: quatro eletrostáticos para as altas e super altas, dois drivers para os médios e dois para os graves, dentro de um corpo moldado no seu ouvido.</p>
-                  <p>No eletrostático, uma película finíssima é movida por campo elétrico, sem bobina e sem peças mecânicas no caminho. Ela começa e para junto com o sinal, então o agudo chega rápido, aberto e cheio de ar, com um detalhe que não cansa nem em longas sessões de audição.</p>
-                  <p>Acompanha cabo balanceado de 8 núcleos prateados com conector 2 pinos.</p>
+            <div data-product-blocks>
+              <div class="product-block product-block--price">
+                <span class="visually-hidden">Preço normal</span>
+                <span class="product__price">R$ 0.000,00</span><span class="proto-price-todo">preço a definir</span>
+                <div class="xe-parcelas" style="font-size: 0.9em; margin-top: 4px;">
+                  <div class="xe-parcelas-texto" style="opacity: 0.85;">ou 12x de R$&nbsp;000,00 sem juros</div>
+                  <div class="xe-pix" style="display: block; margin-top: 2px; font-weight: 600;">Quer o desconto no Pix? Chame um dos nossos consultores!</div>
                 </div>
-              </details>
-              <details>
-                <summary>Informações de envio</summary>
-                <div class="rte"><p>Depois do pedido, a nossa equipe entra em contato para orientar o envio do pré-molde. Com o molde aprovado na Xtreme Ears, o fone entra em produção e é enviado em cerca de 4 semanas, com frete grátis.</p></div>
-              </details>
-              <details>
-                <summary>Garantia</summary>
-                <div class="rte"><p>Assistência técnica nacional da própria Xtreme Ears. Veja as condições em <a href="https://xtremeears.com.br/pages/manutencao-e-garantia">Manutenção e Garantia</a>.</p></div>
-              </details>
+                <div class="product__policies rte small--text-center"><a href="https://xtremeears.com.br/policies/shipping-policy">Frete</a> calculado no checkout.</div>
+              </div>
+              <div class="product-block product-block--sales-point">
+                <ul class="sales-points">
+                  <li class="sales-point"><span class="icon-and-text"><span class="icon icon--inventory"></span><span>Em estoque</span></span></li>
+                </ul>
+              </div>
+              <div class="product-block">
+                <!-- no Shopify este é o botão do Custom Product Builder (classe personalize-it--js) -->
+                <a href="#personalizar" class="button personalize-it--js button--full-width button--secondary btn btn--full btn--secondary">Personalizar</a>
+              </div>
+              <div class="product-block">
+                <div class="rte">
+                  <b>Eletrostático: o agudo mais puro da Xtreme Ears, num fone moldado para audiófilos.</b>
+                  <p>Oito drivers em três vias, dentro de um corpo feito a partir do molde do seu ouvido. Quatro eletrostáticos cuidam das altas e super altas, dois drivers dedicados ficam com os médios e dois com os graves.</p>
+                  <p><b>Tecnologia eletrostática:</b> uma película finíssima é movida por campo elétrico, sem bobina e sem peças mecânicas no caminho. Ela começa e para junto com o sinal, então o agudo chega rápido, aberto e cheio de ar, com um detalhe que não cansa nem em longas sessões de audição.</p>
+                  <p><b>Médios com corpo:</b> dois drivers dedicados à voz e aos instrumentos, com timbre natural e definição.</p>
+                  <p><b>Graves com controle:</b> dois drivers para peso e extensão, sem embolar os médios.</p>
+                  <p><b>Crossover de 3 vias:</b> separa o sinal com precisão e entrega a cada grupo só a faixa que ele faz melhor.</p>
+                  <p><b>Especificações:</b> 8 drivers · 4 eletrostáticos · 3 vias · 19 Ω · 115 dB · 10 Hz a 24 kHz. Acompanha cabo balanceado de 8 núcleos prateados com conector 2 pinos.</p>
+                </div>
+              </div>
+              <div class="product-block product-block--tab">
+                <div class="collapsibles-wrapper collapsibles-wrapper--border-bottom">
+                  <button type="button" class="label collapsible-trigger collapsible-trigger-btn collapsible-trigger-btn--borders collapsible--auto-height" aria-controls="xe-tab-envio" aria-expanded="false">
+                    Informações de Envio
+                    <span class="collapsible-trigger__icon collapsible-trigger__icon--open" role="presentation"><svg aria-hidden="true" focusable="false" role="presentation" class="icon icon--wide icon-chevron-down" viewBox="0 0 28 16"><path d="m1.57 1.59 12.76 12.77L27.1 1.59" stroke-width="2" stroke="#000" fill="none"/></svg></span>
+                  </button>
+                  <div id="xe-tab-envio" class="collapsible-content collapsible-content--all">
+                    <div class="collapsible-content__inner rte">
+                      <p>A nossa equipe entrará em contato com você para dar prosseguimento ao seu pedido, auxiliando no processo de envio dos pré-moldes do seu ouvido. Assim que o pré-molde, aprovado previamente, é recebido pela Xtreme Ears, o seu fone entrará em processo de produção e será enviado dentro do prazo combinado (atualmente o prazo de produção dos fones moldados Xtreme Ears é de aproximadamente 4 semanas).</p>
+                      <p>Para mais informações, acesse nossa página de <a href="https://xtremeears.com.br/pages/como-comprar-1" target="_blank" title="Como comprar?">Como Comprar</a>.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="product-block product-block--tab">
+                <div class="collapsibles-wrapper collapsibles-wrapper--border-bottom">
+                  <button type="button" class="label collapsible-trigger collapsible-trigger-btn collapsible-trigger-btn--borders collapsible--auto-height" aria-controls="xe-tab-garantia" aria-expanded="false">
+                    Garantia
+                    <span class="collapsible-trigger__icon collapsible-trigger__icon--open" role="presentation"><svg aria-hidden="true" focusable="false" role="presentation" class="icon icon--wide icon-chevron-down" viewBox="0 0 28 16"><path d="m1.57 1.59 12.76 12.77L27.1 1.59" stroke-width="2" stroke="#000" fill="none"/></svg></span>
+                  </button>
+                  <div id="xe-tab-garantia" class="collapsible-content collapsible-content--all">
+                    <div class="collapsible-content__inner rte">
+                      <p>Os fones moldados da Xtreme Ears têm garantia de um ano, assim, realizamos assistência a todos os defeitos de fabricação e eventuais entupimentos sem custo ao cliente durante esse período. Os cabos que acompanham os fones têm garantia de 90 dias, e as cápsulas de acrílico dos fones tem garantia de 60 dias para ajustes dos moldes. Para mais informações, acesse nossa página de <a href="https://xtremeears.com.br/pages/manutencao-e-garantia" title="Manutenção e Garantia">Manutenção e Garantia</a>.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="grid__item medium-up--one-half">
-          <div class="product__photos" data-xe="galeria">
-            <div class="proto-main"><img data-xe-main src="fotos/xe-est8-pro-hero-1000.webp?v=2" srcset="fotos/xe-est8-pro-hero-1000.webp?v=2 1000w, fotos/xe-est8-pro-hero.webp?v=2 2000w" sizes="(min-width: 769px) 50vw, 100vw" loading="lazy" decoding="async" alt="Par do Fone In Ear Eletrostático com faceplate preto e folha de ouro e cabo balanceado de 8 núcleos" width="2000" height="2000"></div>
+          <div class="product__photos product__photos--below" data-xe="galeria">
+            <div class="proto-main"><img data-xe-main src="fotos/xe-est-lancamento-1000.webp" srcset="fotos/xe-est-lancamento-1000.webp 1000w, fotos/xe-est-lancamento.webp 2048w" sizes="(min-width: 769px) 50vw, 100vw" decoding="async" alt="Lançamento: par do Fone In Ear Eletrostático, indicado para audiófilos" width="2048" height="2048"></div>
             <div class="proto-thumbs">
-              <a href="fotos/xe-est8-pro-hero.webp?v=2" data-xe-thumb class="is-active"><img src="fotos/xe-est8-pro-hero-thumb.webp?v=2" width="200" height="200" decoding="async" alt="Foto principal do par Eletrostático" loading="lazy"></a>
-              <a href="fotos/xe-est8-pro-0.webp?v=2" data-xe-thumb><img src="fotos/xe-est8-pro-0-thumb.webp?v=2" width="200" height="150" decoding="async" alt="Par de fones Eletrostático de frente" loading="lazy"></a>
+              <a href="fotos/xe-est-lancamento.webp" data-xe-thumb class="is-active"><img src="fotos/xe-est-lancamento-thumb.webp" width="200" height="200" decoding="async" alt="Arte de lançamento do Eletrostático" loading="lazy"></a>
+              <a href="fotos/xe-est8-pro-cat.webp" data-xe-thumb><img src="fotos/xe-est8-pro-cat-thumb.webp" width="200" height="110" decoding="async" alt="Par do Eletrostático em fundo branco, cabo balanceado" loading="lazy"></a>
               <a href="fotos/xe-est8-pro-2.webp?v=2" data-xe-thumb><img src="fotos/xe-est8-pro-2-thumb.webp?v=2" width="200" height="150" decoding="async" alt="Eletrostático de perfil com os drivers aparentes" loading="lazy"></a>
               <a href="fotos/xe-est8-pro-1.webp?v=2" data-xe-thumb><img src="fotos/xe-est8-pro-1-thumb.webp?v=2" width="200" height="150" decoding="async" alt="Eletrostático mostrando o corpo moldado e a cânula" loading="lazy"></a>
               <a href="fotos/xe-est8-pro-3.webp?v=2" data-xe-thumb><img src="fotos/xe-est8-pro-3-thumb.webp?v=2" width="200" height="150" decoding="async" alt="Vista explodida do Eletrostático com os oito drivers" loading="lazy"></a>
@@ -467,6 +465,6 @@ body { margin: 0; background: #fff; }
 
 <script defer src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script defer src="assets/xe-est-model.js?v=9"></script>
-<script defer src="assets/xe-est.js?v=8"></script>
+<script defer src="assets/xe-est.js?v=9"></script>
 </body>
 </html>

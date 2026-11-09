@@ -480,6 +480,20 @@
     sel(0);
   }
 
+  // abas recolhíveis do Impulse (no Shopify quem faz é o theme.js; aqui só no protótipo)
+  function initCollapsibles(scope) {
+    [].slice.call((scope || document).querySelectorAll('.collapsible-trigger[aria-controls]')).forEach(function (btn) {
+      if (btn.__xe || window.theme) return; btn.__xe = true;
+      var box = document.getElementById(btn.getAttribute('aria-controls')); if (!box) return;
+      btn.addEventListener('click', function () {
+        var open = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.classList.toggle('is-open', open); box.classList.toggle('is-open', open);
+        box.style.height = open ? box.firstElementChild.scrollHeight + 'px' : '0px';
+      });
+    });
+  }
+
   // revelação ao rolar (títulos e blocos com .xe-ap-reveal)
   function initReveal(scope) {
     var els = [].slice.call((scope || document).querySelectorAll('.xe-ap-reveal:not(.is-in)'));
@@ -498,7 +512,7 @@
       var fn = INIT[el.dataset.xe]; if (fn) fn(el);
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); initReveal(); }); else { boot(); initReveal(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); initReveal(); initCollapsibles(); }); else { boot(); initReveal(); initCollapsibles(); }
   // editor de temas do Shopify recarrega seções isoladas
   document.addEventListener('shopify:section:load', function (e) { boot(e.target); initReveal(e.target); });
 })();

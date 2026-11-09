@@ -361,13 +361,14 @@
     if (SH) {
       // conector na lateral de fora, no alto: ponto do contorno mais para cima e para fora, um pouco abaixo da borda
       var best = null, bs = -1e9;
-      SH.outline.forEach(function (p) { var sc = p[0] * 0.7 + p[1] * 0.72; if (sc > bs) { bs = sc; best = p; } });
+      // conector na lateral de fora, no terço de cima (como nos fones da loja), embutido na parede do casco abaixo do faceplate
+      SH.outline.forEach(function (p) { var sc = p[0] * 0.94 + p[1] * 0.34; if (sc > bs) { bs = sc; best = p; } });
       var bl = Math.hypot(best[0], best[1]);
-      SOCK.set(best[0] * (1 - 0.06 / bl), best[1] * (1 - 0.06 / bl), TOP - 0.16);
+      SOCK.set(best[0] * (1 - 0.1 / bl), best[1] * (1 - 0.1 / bl), TOP - 0.3);
     }
     var sock = new THREE.Mesh(roundedBox(0.12, 0.24, 0.16, 0.035), new THREE.MeshPhysicalMaterial({ color: 0xdfe4ea, transmission: 0.7, roughness: 0.15, thickness: 0.1, transparent: true, opacity: 0.8 }));
     sock.position.copy(SOCK); groups.face.add(sock);
-    var cDir = new THREE.Vector3(1, 0.3, -0.18).normalize(), cQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), cDir);
+    var cDir = new THREE.Vector3(1, 0.06, -0.12).normalize(), cQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), cDir);
     var goldMat = new THREE.MeshStandardMaterial({ color: 0xe3bd6a, metalness: 1, roughness: 0.18 });
     for (var pi = 0; pi < 2; pi++) {
       var pin = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.1, 10), goldMat);
@@ -389,8 +390,8 @@
                   new THREE.Vector3(O.x + 0.52, O.y + 1.2, O.z - 0.8), new THREE.Vector3(O.x + 0.28, O.y + 1.9, O.z - 1.6), new THREE.Vector3(O.x + 0.02, O.y + 2.8, O.z - 2.8),
                   new THREE.Vector3(O.x - 0.2, O.y + 3.8, O.z - 3.9)];
       // foto de catálogo: o cabo sai de lado e sobe em curva para fora do quadro
-      if (opts.pro) path = [O, O.clone().addScaledVector(cDir, 0.3), new THREE.Vector3(O.x + 0.75, O.y + 0.18, O.z - 0.06), new THREE.Vector3(O.x + 1.35, O.y + 0.55, O.z - 0.16),
-                  new THREE.Vector3(O.x + 1.85, O.y + 1.25, O.z - 0.3), new THREE.Vector3(O.x + 2.15, O.y + 2.2, O.z - 0.45), new THREE.Vector3(O.x + 2.3, O.y + 3.4, O.z - 0.6)];
+      if (opts.pro) path = [O, O.clone().addScaledVector(cDir, 0.35), new THREE.Vector3(O.x + 0.95, O.y + 0.1, O.z - 0.12), new THREE.Vector3(O.x + 1.6, O.y + 0.32, O.z - 0.24),
+                  new THREE.Vector3(O.x + 2.15, O.y + 0.8, O.z - 0.36), new THREE.Vector3(O.x + 2.5, O.y + 1.6, O.z - 0.48), new THREE.Vector3(O.x + 2.7, O.y + 2.8, O.z - 0.6)];
       var silver = new THREE.MeshPhysicalMaterial({ color: 0xb9bdc3, metalness: 0.9, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.2 });
       var dark = new THREE.MeshPhysicalMaterial({ color: 0x3c3f44, metalness: 0.75, roughness: 0.36, clearcoat: 0.6, clearcoatRoughness: 0.2 });
       var strands = opts.lite ? [silver, dark, silver, dark] : [silver, dark, silver, dark, silver, dark, silver, dark];
