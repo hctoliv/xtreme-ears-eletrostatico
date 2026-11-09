@@ -243,3 +243,13 @@
   .xe-ap-reveal { opacity: 1; transform: none; transition: none; }
   .xe-ap-hero__word, .xe-ap-hero__img, .xe-ap-design__view img { transition: none; }
 }
+
+/* design em fundo claro, como as páginas de produto da loja (Impulse) */
+.xe-ap-design--light { background: #fff; color: #000; }
+.xe-ap-design--light .xe-ap-design__view { background: #fff; }
+.xe-ap-design--light .xe-ap-design__tabs { border-color: rgba(0,0,0,.18); }
+.xe-ap-design--light .xe-ap-design__tabs button { color: #333; }
+.xe-ap-design--light .xe-ap-design__tabs button[aria-selected="true"] { background: #111; color: #fff; }
+.xe-ap-design--light .xe-ap-design__tabs button:focus-visible { outline-color: #111; }
+.xe-ap-design--light .xe-ap-design__cap { color: #6b6b6b; }
+.xe-ap-design--light .xe-ap-design__cap b { color: #000; }

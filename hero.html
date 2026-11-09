@@ -75,6 +75,26 @@
       });
       return [R, L];
     }
+    var view = q.get('view') || 'par';
+    if (view !== 'par') {
+      // ângulos de um fone só, no mesmo estúdio
+      var M = XEModel.buildIEM({ logo: logo, cable: true, pro: true, shell: SR });
+      var inner = new THREE.PointLight(0xfff1de, 2.6, 2.6, 2); inner.position.set(0.25, 0.05, -0.5); M.root.add(inner);
+      var POSE = { face: [-0.1, -0.3, 0.05], perfil: [-0.08, -1.3, 0.02], dentro: [0.2, -0.72, 0.04] }[view] || [0, 0, 0];
+      if (view === 'dentro') M.setExplode(1);
+      M.update(0.016);
+      M.root.rotation.set(POSE[0], POSE[1], POSE[2]); scene.add(M.root); M.root.updateMatrixWorld(true);
+      var box = new THREE.Box3();
+      M.root.traverse(function (o) { if (o.isMesh && o.visible && !(o.geometry.type === 'TubeGeometry' && o.geometry.parameters.radius >= 0.03)) box.expandByObject(o); });
+      var cc0 = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+      M.root.position.sub(cc0);
+      var fit = Math.max(sz.y, sz.x / (W / H)) * (view === 'face' ? 1.5 : 1.42);
+      var dist = fit / (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)));
+      cam.position.set(0, dist * 0.12, dist); cam.lookAt(0, 0, 0);
+      renderer.render(scene, cam);
+      document.title = 'pronto';
+      return;
+    }
     pair(scene, true);
     // reflexo no chão polido: cópia espelhada sob um véu que some com a distância
     var fy = -1.62, mir = new THREE.Group(); mir.scale.y = -1; mir.position.y = 2 * fy; scene.add(mir);
